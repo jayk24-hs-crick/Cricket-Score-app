@@ -68,7 +68,7 @@
         <div class="flex justify-between items-center text-xs text-slate-400 pb-2 border-b border-slate-800/80 mb-3">
           <span class="font-bold text-slate-300" id="currentInningTitle">1st Innings</span>
           <div class="flex items-center gap-2">
-            <span class="bg-slate-800 px-2 py-0.5 rounded text-[11px] text-amber-400 font-mono" id="strikeRotatorCycle">Strike Cycle: 0/3</span>
+            <span class="bg-slate-800 px-2 py-0.5 rounded text-[11px] text-amber-400 font-mono" id="strikeRotatorCycle">Strike: 0/3</span>
             <span class="text-emerald-400 font-medium text-[11px]" id="targetDisplay"></span>
           </div>
         </div>
@@ -86,7 +86,7 @@
           <div class="text-right space-y-0.5">
             <div class="text-xs text-slate-400">CRR: <span class="font-bold text-slate-200" id="crrDisplay">0.00</span></div>
             <div class="text-xs text-amber-400 font-medium" id="rrrContainer" style="display:none;">RRR: <span class="font-bold" id="rrrDisplay">--</span></div>
-            <div class="text-[11px] text-slate-400 font-mono">Balls in Over: <span id="overBallCounterDisplay" class="text-emerald-400 font-bold">0/6</span></div>
+            <div class="text-[11px] text-slate-400 font-mono">Over Progress: <span id="overBallCounterDisplay" class="text-emerald-400 font-bold">0/6</span></div>
           </div>
         </div>
 
@@ -136,7 +136,7 @@
           </div>
         </div>
 
-        <!-- Manual Strike Rotate / LMS Alert -->
+        <!-- Strike Swap & LMS Alert -->
         <div class="pt-2 flex items-center justify-between border-t border-slate-800/80">
           <div id="lmsBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded bg-purple-950 border border-purple-500/50 text-purple-300">
             LAST MAN STANDING (SOLO)
@@ -147,10 +147,10 @@
         </div>
       </div>
 
-      <!-- Current Bowler Card -->
+      <!-- Current Bowler Card (Forced 6-ball spell, no mid-over manual swap) -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md flex justify-between items-center text-xs">
         <div>
-          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Current Bowler</span>
+          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Bowler (Must Bowl 6 Balls)</span>
           <span class="text-sm font-semibold text-white" id="currentBowlerName">--</span>
         </div>
         <div class="flex items-center gap-3 font-mono">
@@ -158,9 +158,6 @@
           <div><span class="text-slate-500">R:</span> <span id="bowlerRuns" class="font-bold text-white">0</span></div>
           <div><span class="text-slate-500">W:</span> <span id="bowlerWickets" class="font-bold text-emerald-400">0</span></div>
           <div><span class="text-slate-500">Econ:</span> <span id="bowlerEcon" class="font-bold text-slate-300">0.0</span></div>
-          <button onclick="openChangeBowlerModal(false)" class="scorer-control px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-bold hover:text-white">
-            Change
-          </button>
         </div>
       </div>
 
@@ -456,30 +453,25 @@
     </div>
   </div>
 
-  <!-- Mandatory Bowler Change Modal (Every 6 Balls) -->
-  <div id="bowlerModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-emerald-500/50 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <div>
-          <h3 class="font-bold text-white text-sm" id="bowlerModalTitle">Over Complete — Change Bowler</h3>
-          <p class="text-[11px] text-emerald-400" id="bowlerModalSubtitle">6 balls bowled. Select the next bowler.</p>
-        </div>
-        <button id="bowlerModalCloseBtn" onclick="closeChangeBowlerModal()" class="text-slate-400 hover:text-white hidden">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+  <!-- Mandatory Bowler Change Modal (Strictly After 6 Balls) -->
+  <div id="bowlerModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="border-b border-slate-800 pb-2">
+        <h3 class="font-bold text-white text-base">Over Complete!</h3>
+        <p class="text-xs text-emerald-400">6 legal balls bowled. A new bowler must take the next over.</p>
       </div>
 
       <div class="text-xs space-y-2">
-        <label class="text-slate-300 font-semibold block">Choose Next Bowler:</label>
+        <label class="text-slate-300 font-semibold block">Select Bowler for Next Over:</label>
         <select id="newBowlerSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-semibold text-xs"></select>
-        <p class="text-[10px] text-slate-400 leading-normal" id="bowlerModalHint">
-          * A different bowler must bowl the next over.
+        <p class="text-[10px] text-slate-400 leading-normal">
+          * Consecutive overs by the same bowler are not permitted.
         </p>
       </div>
 
       <div class="pt-2">
         <button onclick="confirmNewBowler()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">
-          Confirm Bowler & Start Over
+          Set Bowler & Start Next Over
         </button>
       </div>
     </div>
@@ -487,11 +479,12 @@
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_state_v3';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v3';
+    // Updated clean storage key to prevent stale cache issues
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v4_stable';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v4_stable';
 
     let currentRole = 'scorer';
-    let isMandatoryBowlerChange = false;
+    let pendingRetirementCheck = false;
 
     let state = {
       team1: { name: 'Hawks', roster: ['Rohit', 'Virat', 'Surya', 'Hardik', 'Rinku', 'Axar'] },
@@ -512,9 +505,8 @@
         totalRuns: 0,
         wickets: 0,
         legalBalls: 0,
-        overBallCount: 0, // 0 to 6 in current over
         extras: { wides: 0, noballs: 0 },
-        cycleBallCount: 0, // 0 to 3 for strike swap
+        cycleBallCount: 0, // 0 to 3 for strike rotation
         currentOverDeliveries: [],
         strikerIndex: 0,
         nonStrikerIndex: 1,
@@ -555,7 +547,6 @@
       inn.nonStrikerIndex = 1;
       inn.currentBowlerIndex = 0;
       inn.cycleBallCount = 0;
-      inn.overBallCount = 0;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -606,7 +597,7 @@
 
     function pushStateForUndo() {
       state.historyStack.push(JSON.parse(JSON.stringify(state)));
-      if (state.historyStack.length > 30) state.historyStack.shift();
+      if (state.historyStack.length > 40) state.historyStack.shift();
     }
 
     function undoLastBall() {
@@ -619,7 +610,7 @@
       renderAll();
     }
 
-    // Record Legal Delivery (0, 1, 2, 3, 4, 6)
+    // Deliveries: 0, 1, 2, 3, 4, 6
     function recordDelivery(runs) {
       const inn = currentInning();
       if (inn.isInningComplete) return;
@@ -640,15 +631,14 @@
 
       inn.totalRuns += runs;
       inn.legalBalls += 1;
-      inn.overBallCount += 1;
       inn.cycleBallCount += 1;
 
       inn.currentOverDeliveries.push({ type: 'run', text: runs.toString(), val: runs });
 
-      postBallEvaluation();
+      processBallAftermath();
     }
 
-    // Special -2 Penalty Delivery
+    // -2 Special Penalty Delivery
     function recordPenaltyMinus2() {
       const inn = currentInning();
       if (inn.isInningComplete) return;
@@ -667,15 +657,14 @@
       bowler.runsConceded -= 2;
 
       inn.legalBalls += 1;
-      inn.overBallCount += 1;
       inn.cycleBallCount += 1;
 
       inn.currentOverDeliveries.push({ type: 'penalty', text: '-2', val: -2 });
 
-      postBallEvaluation();
+      processBallAftermath();
     }
 
-    // Record Extra (Wide, No Ball)
+    // Extras (WD, NB)
     function recordExtra(type) {
       const inn = currentInning();
       if (inn.isInningComplete) return;
@@ -700,36 +689,39 @@
       renderAll();
     }
 
-    // Evaluates state progression cleanly without halts
-    function postBallEvaluation() {
+    // Post-delivery evaluation without freezing
+    function processBallAftermath() {
       const inn = currentInning();
 
       checkMatchProgress();
-      handleStrikeCycle();
-      const retired = checkStretchLimit(inn.strikerIndex);
 
-      // Check 6-ball over completion for mandatory bowler change
-      if (inn.overBallCount >= 6) {
-        inn.overBallCount = 0;
-        inn.currentOverDeliveries = []; // Reset visual pill container for new over
-        
-        if (!inn.isInningComplete && !retired) {
-          openChangeBowlerModal(true);
-        }
-      }
-
-      saveState();
-      renderAll();
-    }
-
-    function handleStrikeCycle() {
-      const inn = currentInning();
+      // Check Strike Rotation (every 3 balls)
       if (inn.cycleBallCount >= 3) {
         inn.cycleBallCount = 0;
         if (!inn.isLastManStanding) {
           swapStrike();
         }
       }
+
+      // Check 12-ball forced pause
+      const isPaused = checkStretchLimit(inn.strikerIndex);
+
+      // Check Over Completion (strictly 6 balls)
+      const ballsInThisOver = inn.legalBalls % 6;
+      if (ballsInThisOver === 0 && inn.legalBalls > 0) {
+        // 6 balls finished!
+        inn.currentOverDeliveries = [];
+        if (!inn.isInningComplete) {
+          if (!isPaused) {
+            openMandatoryBowlerModal();
+          } else {
+            pendingRetirementCheck = true; // Modal will appear immediately after substitution
+          }
+        }
+      }
+
+      saveState();
+      renderAll();
     }
 
     function swapStrike() {
@@ -772,7 +764,6 @@
       const select = document.getElementById('retiredNextBatterSelect');
       select.innerHTML = '';
 
-      const inn = currentInning();
       const available = getEligibleBatters();
 
       available.forEach(b => {
@@ -783,7 +774,7 @@
       });
 
       if (available.length === 0) {
-        inn.isLastManStanding = true;
+        currentInning().isLastManStanding = true;
         closeRetirementModal();
       } else {
         document.getElementById('retirementModal').classList.remove('hidden');
@@ -800,9 +791,9 @@
 
       closeRetirementModal();
 
-      // If over ended on this exact 12th ball, prompt for bowler now
-      if (inn.overBallCount === 0 && inn.legalBalls > 0 && inn.legalBalls % 6 === 0) {
-        openChangeBowlerModal(true);
+      if (pendingRetirementCheck) {
+        pendingRetirementCheck = false;
+        openMandatoryBowlerModal();
       }
 
       saveState();
@@ -836,7 +827,7 @@
       if (available.length === 0) {
         const opt = document.createElement('option');
         opt.value = "-1";
-        opt.innerText = "No players remaining (Last Man Standing or All Out)";
+        opt.innerText = "No players remaining (LMS or All Out)";
         nextSelect.appendChild(opt);
       }
 
@@ -863,12 +854,9 @@
       inn.wickets += 1;
 
       bowler.ballsBowled += 1;
-      if (manner !== 'Run Out') {
-        bowler.wickets += 1;
-      }
+      if (manner !== 'Run Out') bowler.wickets += 1;
 
       inn.legalBalls += 1;
-      inn.overBallCount += 1;
       inn.cycleBallCount += 1;
       inn.currentOverDeliveries.push({ type: 'wicket', text: 'W', val: 0 });
 
@@ -893,7 +881,7 @@
       }
 
       closeWicketModal();
-      postBallEvaluation();
+      processBallAftermath();
     }
 
     function getEligibleBatters() {
@@ -914,33 +902,15 @@
       return fresh.length > 0 ? fresh : paused;
     }
 
-    // Bowler Modal (Mandatory vs Manual)
-    function openChangeBowlerModal(isMandatory = false) {
-      isMandatoryBowlerChange = isMandatory;
+    // Mandatory Bowler Change (Prompted strictly every 6 balls)
+    function openMandatoryBowlerModal() {
       const inn = currentInning();
       const select = document.getElementById('newBowlerSelect');
       select.innerHTML = '';
 
-      const modalTitle = document.getElementById('bowlerModalTitle');
-      const modalSubtitle = document.getElementById('bowlerModalSubtitle');
-      const closeBtn = document.getElementById('bowlerModalCloseBtn');
-
-      if (isMandatory) {
-        modalTitle.innerText = "Over Complete — Change Bowler";
-        modalSubtitle.innerText = "6 legal balls bowled. A new bowler must take the next over.";
-        closeBtn.classList.add('hidden');
-      } else {
-        modalTitle.innerText = "Change Bowler";
-        modalSubtitle.innerText = "Select bowler to bowl:";
-        closeBtn.classList.remove('hidden');
-      }
-
       inn.bowlers.forEach((b, idx) => {
-        // In mandatory change, prevent picking the identical bowler who just finished
-        const isCurrent = (idx === inn.currentBowlerIndex);
-        if (isMandatory && isCurrent && inn.bowlers.length > 1) {
-          return; // Skip consecutive over by same bowler
-        }
+        // Enforce that the same bowler cannot bowl 2 overs consecutively
+        if (idx === inn.currentBowlerIndex && inn.bowlers.length > 1) return;
 
         const opt = document.createElement('option');
         opt.value = idx;
@@ -951,24 +921,17 @@
       document.getElementById('bowlerModal').classList.remove('hidden');
     }
 
-    function closeChangeBowlerModal() {
-      if (isMandatoryBowlerChange) return; // Prevent dismissing without picking
-      document.getElementById('bowlerModal').classList.add('hidden');
-    }
-
     function confirmNewBowler() {
       const inn = currentInning();
       const select = document.getElementById('newBowlerSelect');
       if (select.value === "") return;
 
       inn.currentBowlerIndex = parseInt(select.value);
-      isMandatoryBowlerChange = false;
       document.getElementById('bowlerModal').classList.add('hidden');
       saveState();
       renderAll();
     }
 
-    // Match Progress Checks
     function checkMatchProgress() {
       const inn = currentInning();
       const maxBalls = state.maxOvers * 6;
@@ -985,9 +948,13 @@
       }
 
       if (inn.isInningComplete && state.currentInning === 1) {
-        if (confirm("1st Innings completed! Transition to 2nd Innings?")) {
-          state.currentInning = 2;
-        }
+        setTimeout(() => {
+          if (confirm("1st Innings completed! Transition to 2nd Innings?")) {
+            state.currentInning = 2;
+            saveState();
+            renderAll();
+          }
+        }, 100);
       }
     }
 
@@ -995,7 +962,7 @@
       return state.innings[state.currentInning - 1];
     }
 
-    // Excel / CSV Upload
+    // Excel Upload
     function handleExcelUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1022,7 +989,7 @@
           if (t1List.length > 0) document.getElementById('setupT1Roster').value = t1List.join('\n');
           if (t2List.length > 0) document.getElementById('setupT2Roster').value = t2List.join('\n');
 
-          alert(`Successfully imported squads! Team 1: ${t1List.length} players, Team 2: ${t2List.length} players.`);
+          alert(`Imported! Team 1: ${t1List.length} players, Team 2: ${t2List.length} players.`);
         } catch (err) {
           alert("Error parsing Excel file. Ensure simple two-column format.");
           console.error(err);
@@ -1134,7 +1101,7 @@
     }
 
     function confirmNewMatch() {
-      if (confirm("Reset current match data? Remember to save to archive first if you want to keep records.")) {
+      if (confirm("Reset current match data? Make sure you archive first if needed.")) {
         localStorage.removeItem(MATCH_STORAGE_KEY);
         location.reload();
       }
@@ -1154,8 +1121,8 @@
 
       document.getElementById('headerMatchStatus').innerText = `${inn.battingTeam} Batting`;
       document.getElementById('currentInningTitle').innerText = `${state.currentInning === 1 ? '1st' : '2nd'} Innings`;
-      document.getElementById('strikeRotatorCycle').innerText = `Strike Cycle: ${inn.cycleBallCount}/3 Balls`;
-      document.getElementById('overBallCounterDisplay').innerText = `${inn.overBallCount}/6`;
+      document.getElementById('strikeRotatorCycle').innerText = `Strike: ${inn.cycleBallCount}/3`;
+      document.getElementById('overBallCounterDisplay').innerText = `${inn.legalBalls % 6}/6`;
       document.getElementById('battingTeamDisplay').innerText = inn.battingTeam;
       document.getElementById('liveScore').innerText = `${inn.totalRuns}-${inn.wickets}`;
       document.getElementById('liveOvers').innerText = formatOvers(inn.legalBalls);
