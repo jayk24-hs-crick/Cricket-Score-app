@@ -407,7 +407,7 @@
           <!-- 4-Digit Scorer PIN -->
           <div>
             <label class="text-xs text-amber-400 font-bold block mb-1">Scorer PIN (4 Digits)</label>
-            <input type="password" id="setupScorerPin" maxlength="4" value="1234" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono font-bold tracking-widest text-center">
+            <input type="password" id="setupScorerPin" maxlength="4" value="2405" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono font-bold tracking-widest text-center">
           </div>
         </div>
       </div>
@@ -653,7 +653,7 @@
       currentInning: 1,
       matchWinner: null,
       matchResultText: null,
-      scorerPin: '1234',
+      scorerPin: '2405',
       innings: [
         createNewInningObject('Hawks', 'Tigers'),
         createNewInningObject('Tigers', 'Hawks')
@@ -769,7 +769,7 @@
 
     function verifyScorerPin() {
       const input = document.getElementById('pinInputEntry').value.trim();
-      const expected = state.scorerPin || '1234';
+      const expected = state.scorerPin || '2405';
 
       if (input === expected) {
         currentRole = 'scorer';
@@ -1436,7 +1436,7 @@
       t1NonStriker.innerHTML = t1List.map((name, i) => `<option value="${i}" ${i === 1 ? 'selected' : ''}>${name}</option>`).join('');
       t2Bowler.innerHTML = t2List.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${name}</option>`).join('');
 
-      document.getElementById('setupScorerPin').value = state.scorerPin || '1234';
+      document.getElementById('setupScorerPin').value = state.scorerPin || '2405';
     }
 
     function handleExcelUpload(event) {
@@ -1479,7 +1479,7 @@
       const t1Name = document.getElementById('setupTeam1Name').value.trim() || 'Team 1';
       const t2Name = document.getElementById('setupTeam2Name').value.trim() || 'Team 2';
       const overs = parseInt(document.getElementById('setupMaxOvers').value) || 10;
-      const pin = document.getElementById('setupScorerPin').value.trim() || '1234';
+      const pin = document.getElementById('setupScorerPin').value.trim() || '2405';
 
       const t1Roster = document.getElementById('setupT1Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
       const t2Roster = document.getElementById('setupT2Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
