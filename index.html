@@ -66,7 +66,7 @@
         <div class="flex justify-between items-center text-xs text-slate-400 pb-2 border-b border-slate-800/80 mb-3">
           <span class="font-bold text-slate-300" id="currentInningTitle">1st Innings</span>
           <div class="flex items-center gap-2">
-            <span class="bg-slate-800 px-2 py-0.5 rounded text-[11px] text-amber-400 font-mono" id="strikeRotatorCycle">Strike: 0/3</span>
+            <span class="bg-slate-800 px-2.5 py-0.5 rounded text-[11px] text-amber-400 font-mono font-bold" id="strikeRotatorCycle">Strike: 0/3</span>
             <span class="text-emerald-400 font-medium text-[11px]" id="targetDisplay"></span>
           </div>
         </div>
@@ -98,7 +98,7 @@
       <!-- Active Batters Card -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md space-y-2">
         <div class="flex justify-between items-center text-xs text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800 pb-1.5">
-          <span>Batter</span>
+          <span>Batter (Runs)</span>
           <div class="flex gap-4">
             <span>Consec.</span>
             <span>R(B)</span>
@@ -111,7 +111,7 @@
         <div id="strikerRow" class="flex justify-between items-center text-sm py-1 bg-emerald-950/30 -mx-1 px-2 rounded border border-emerald-500/20">
           <div class="flex items-center gap-1.5 font-semibold text-white">
             <span class="text-emerald-400 text-xs">🏏*</span>
-            <span id="strikerName">--</span>
+            <span id="strikerNameDisplay">--</span>
           </div>
           <div class="flex items-center gap-4 text-xs font-mono">
             <span id="strikerStretch" class="px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-950 border border-amber-600/40 text-amber-300">0/12</span>
@@ -125,7 +125,7 @@
         <div id="nonStrikerRow" class="flex justify-between items-center text-sm py-1 px-1">
           <div class="flex items-center gap-1.5 text-slate-300">
             <span class="text-slate-500 text-xs pl-3.5"></span>
-            <span id="nonStrikerName">--</span>
+            <span id="nonStrikerNameDisplay">--</span>
           </div>
           <div class="flex items-center gap-4 text-xs font-mono">
             <span id="nonStrikerStretch" class="px-1.5 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-400">0/12</span>
@@ -146,12 +146,14 @@
         </div>
       </div>
 
-      <!-- Current Bowler Card (Full stats verified) -->
+      <!-- Current Bowler Card (Prominent 1/6, 2/6 Counter) -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md flex justify-between items-center text-xs">
         <div>
-          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Bowler (6 Legal Balls / Over)</span>
+          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Current Bowler</span>
           <span class="text-sm font-semibold text-white" id="currentBowlerName">--</span>
-          <span class="text-[11px] text-emerald-400 block font-mono font-bold mt-0.5" id="bowlerOverBallsCounter">This Over: 0/6 balls</span>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold" id="bowlerOverBallsCounter">0/6 balls</span>
+          </div>
         </div>
         <div class="flex items-center gap-3 font-mono">
           <div><span class="text-slate-500">O:</span> <span id="bowlerOvers" class="font-bold text-white">0.0</span></div>
@@ -164,7 +166,7 @@
       <!-- SCORER KEYPAD -->
       <div id="scorerKeypad" class="scorer-control bg-slate-900 rounded-2xl border border-slate-800 p-3 shadow-lg space-y-2.5">
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
-          <span>Scoring Pad (Strike swaps every 3 balls)</span>
+          <span>Scoring Pad (Strike swaps automatically after 3 balls)</span>
           <span class="text-emerald-400 font-normal">No LBW / Byes</span>
         </div>
 
@@ -505,8 +507,8 @@
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v8_solid';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v8_solid';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v11_master';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v11_master';
 
     let currentRole = 'scorer';
     let pendingRetirementCheck = false;
@@ -531,9 +533,9 @@
         totalRuns: 0,
         wickets: 0,
         legalBalls: 0,
-        overLegalBalls: 0,
+        overLegalBalls: 0, // 0 to 6
         extras: { wides: 0, noballs: 0 },
-        cycleBallCount: 0,
+        cycleBallCount: 0, // 0 to 3
         currentOverDeliveries: [],
         strikerIndex: 0,
         nonStrikerIndex: 1,
@@ -628,7 +630,7 @@
 
     function pushStateForUndo() {
       state.historyStack.push(JSON.parse(JSON.stringify(state)));
-      if (state.historyStack.length > 40) state.historyStack.shift();
+      if (state.historyStack.length > 50) state.historyStack.shift();
     }
 
     function undoLastBall() {
@@ -651,27 +653,24 @@
       const striker = inn.batters[inn.strikerIndex];
       const bowler = inn.bowlers[inn.currentBowlerIndex];
 
-      // Clean timeline at start of a brand new over (after previous 6-ball over finished)
+      // Refresh over timeline when starting a new over
       if (inn.overLegalBalls === 0 && inn.legalBalls > 0 && inn.currentOverDeliveries.length >= 6) {
         inn.currentOverDeliveries = [];
       }
 
-      // Update Batter
       striker.runs += runs;
       striker.balls += 1;
       striker.stretchBalls += 1;
       if (runs === 4) striker.fours += 1;
       if (runs === 6) striker.sixes += 1;
 
-      // Update Bowler Stats
       bowler.ballsBowled += 1;
       bowler.runsConceded += runs;
 
-      // Update Innings
       inn.totalRuns += runs;
       inn.legalBalls += 1;
-      inn.overLegalBalls += 1;
-      inn.cycleBallCount += 1;
+      inn.overLegalBalls += 1; // 1/6, 2/6, ...
+      inn.cycleBallCount += 1; // 1/3, 2/3, 3/3
 
       inn.currentOverDeliveries.push({ type: 'run', text: runs.toString(), val: runs });
 
@@ -709,7 +708,7 @@
       processBallAftermath();
     }
 
-    // Modal for Wide / No-Ball
+    // Extras: Wide / No-Ball (Legal balls DO NOT increment)
     function openExtraRunsModal(type) {
       pendingExtraType = type;
       const modal = document.getElementById('extraRunsModal');
@@ -774,13 +773,13 @@
       renderAll();
     }
 
-    // Post-delivery evaluation
+    // Aftermath: Checks Automatic Strike Rotation (every 3 balls), 12-ball limits, and 6-ball over completion
     function processBallAftermath() {
       const inn = currentInning();
 
       checkMatchProgress();
 
-      // Check Strike Rotation (every 3 balls)
+      // Automatic Strike Rotation strictly every 3 legal deliveries
       if (inn.cycleBallCount >= 3) {
         inn.cycleBallCount = 0;
         if (!inn.isLastManStanding) {
@@ -788,10 +787,10 @@
         }
       }
 
-      // Check 12-ball forced pause
+      // Check 12-ball consecutive pause
       const isPaused = checkStretchLimit(inn.strikerIndex);
 
-      // Check Over Completion: strictly 6 legal balls
+      // Check 6-ball over completion
       if (inn.overLegalBalls >= 6) {
         inn.overLegalBalls = 0;
         if (!inn.isInningComplete) {
@@ -943,6 +942,7 @@
         inn.currentOverDeliveries.push({ type: 'extra', text: 'RetHurt', val: 0 });
       } else {
         batterOut.isOut = true;
+        batterOut.balls += 1; // Correctly increment balls faced on dismissal
         batterOut.dismissalText = manner;
         inn.wickets += 1;
         bowler.ballsBowled += 1;
@@ -1006,7 +1006,7 @@
         const isCurrent = (idx === inn.currentBowlerIndex);
         const opt = document.createElement('option');
         opt.value = idx;
-        opt.innerText = `${b.name} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded} r, ${b.wickets} w)${isCurrent ? ' [Bowled Last]' : ''}`;
+        opt.innerText = `${b.name} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded} r, ${b.wickets} w)${isCurrent ? ' [Bowled Last Over]' : ''}`;
         if (!isCurrent) opt.selected = true;
         select.appendChild(opt);
       });
@@ -1021,7 +1021,7 @@
 
       const selectedIdx = parseInt(select.value);
       if (selectedIdx === inn.currentBowlerIndex && inn.bowlers.length > 1) {
-        alert("The same bowler cannot bowl two consecutive overs. Please select another player.");
+        alert("The same bowler cannot bowl two consecutive overs. Please select another bowler.");
         return;
       }
 
@@ -1227,9 +1227,14 @@
 
       document.getElementById('headerMatchStatus').innerText = `${inn.battingTeam} Batting`;
       document.getElementById('currentInningTitle').innerText = `${state.currentInning === 1 ? '1st' : '2nd'} Innings`;
-      document.getElementById('strikeRotatorCycle').innerText = `Strike: ${inn.cycleBallCount}/3`;
+      
+      // Explicit Strike Cycle: 0/3, 1/3, 2/3
+      document.getElementById('strikeRotatorCycle').innerText = `Strike: ${inn.cycleBallCount}/3 balls`;
       document.getElementById('ballsRemainingDisplay').innerText = `${ballsRemaining} / ${maxLegalBalls}`;
-      document.getElementById('bowlerOverBallsCounter').innerText = `This Over: ${inn.overLegalBalls}/6 balls`;
+      
+      // Explicit Bowler Over Count: 1/6, 2/6, ... 6/6 balls
+      document.getElementById('bowlerOverBallsCounter').innerText = `${inn.overLegalBalls}/6 balls`;
+
       document.getElementById('battingTeamDisplay').innerText = inn.battingTeam;
       document.getElementById('liveScore').innerText = `${inn.totalRuns}-${inn.wickets}`;
       document.getElementById('liveOvers').innerText = formatOvers(inn.legalBalls);
@@ -1247,7 +1252,7 @@
         document.getElementById('rrrContainer').style.display = 'none';
       }
 
-      // Timeline Deliveries
+      // Over Timeline Deliveries
       const timeline = document.getElementById('thisOverTimeline');
       if (inn.currentOverDeliveries.length === 0) {
         timeline.innerHTML = '<span class="text-[11px] text-slate-500 font-bold mr-1 uppercase tracking-wider shrink-0">This Over:</span><span class="text-xs text-slate-600 italic">Ready for 1st ball</span>';
@@ -1263,12 +1268,12 @@
         });
       }
 
-      // Batters Rendering
+      // Batsman Rendering with runs added to their name
       const striker = inn.batters[inn.strikerIndex];
       const nonStriker = inn.batters[inn.nonStrikerIndex];
 
       if (striker) {
-        document.getElementById('strikerName').innerText = striker.name;
+        document.getElementById('strikerNameDisplay').innerText = `${striker.name} - ${striker.runs}* (${striker.balls}b)`;
         document.getElementById('strikerStretch').innerText = `${striker.stretchBalls}/12`;
         document.getElementById('strikerRuns').innerText = striker.runs;
         document.getElementById('strikerBalls').innerText = striker.balls;
@@ -1280,12 +1285,12 @@
       const nonStrikerRow = document.getElementById('nonStrikerRow');
       if (inn.isLastManStanding || !nonStriker) {
         nonStrikerRow.classList.add('opacity-30');
-        document.getElementById('nonStrikerName').innerText = '(No Partner - LMS)';
+        document.getElementById('nonStrikerNameDisplay').innerText = '(No Partner - LMS)';
         document.getElementById('lmsBadge').classList.remove('hidden');
       } else {
         nonStrikerRow.classList.remove('opacity-30');
         document.getElementById('lmsBadge').classList.add('hidden');
-        document.getElementById('nonStrikerName').innerText = nonStriker.name;
+        document.getElementById('nonStrikerNameDisplay').innerText = `${nonStriker.name} - ${nonStriker.runs} (${nonStriker.balls}b)`;
         document.getElementById('nonStrikerStretch').innerText = `${nonStriker.stretchBalls}/12`;
         document.getElementById('nonStrikerRuns').innerText = nonStriker.runs;
         document.getElementById('nonStrikerBalls').innerText = nonStriker.balls;
@@ -1294,7 +1299,7 @@
         document.getElementById('nonStrikerSR').innerText = nonStriker.balls > 0 ? ((nonStriker.runs / nonStriker.balls) * 100).toFixed(0) : '0.0';
       }
 
-      // Bowler Rendering (Figures strictly updated)
+      // Bowler Rendering
       const bowler = inn.bowlers[inn.currentBowlerIndex];
       if (bowler) {
         document.getElementById('currentBowlerName').innerText = bowler.name;
