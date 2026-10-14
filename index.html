@@ -13,7 +13,6 @@
 
   <style>
     .tab-active { border-bottom: 3px solid #10b981; color: #10b981; font-weight: 700; }
-    .badge-gold { background: linear-gradient(135deg, #f59e0b, #d97706); }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-16 select-none">
@@ -69,7 +68,7 @@
         <div class="flex justify-between items-center text-xs text-slate-400 pb-2 border-b border-slate-800/80 mb-3">
           <span class="font-bold text-slate-300" id="currentInningTitle">1st Innings</span>
           <div class="flex items-center gap-2">
-            <span class="bg-slate-800 px-2 py-0.5 rounded text-[11px] text-amber-400 font-mono" id="strikeRotatorCycle">Ball 0/3</span>
+            <span class="bg-slate-800 px-2 py-0.5 rounded text-[11px] text-amber-400 font-mono" id="strikeRotatorCycle">Strike Cycle: 0/3</span>
             <span class="text-emerald-400 font-medium text-[11px]" id="targetDisplay"></span>
           </div>
         </div>
@@ -87,14 +86,13 @@
           <div class="text-right space-y-0.5">
             <div class="text-xs text-slate-400">CRR: <span class="font-bold text-slate-200" id="crrDisplay">0.00</span></div>
             <div class="text-xs text-amber-400 font-medium" id="rrrContainer" style="display:none;">RRR: <span class="font-bold" id="rrrDisplay">--</span></div>
-            <div class="text-[11px] text-slate-400 font-mono">NRR: <span id="nrrDisplay" class="text-slate-300">0.00</span></div>
+            <div class="text-[11px] text-slate-400 font-mono">Balls in Over: <span id="overBallCounterDisplay" class="text-emerald-400 font-bold">0/6</span></div>
           </div>
         </div>
 
         <!-- Over Timeline -->
         <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto pb-1" id="thisOverTimeline">
           <span class="text-[11px] text-slate-500 font-bold mr-1 uppercase tracking-wider">This Over:</span>
-          <!-- Timeline balls injected here -->
         </div>
       </div>
 
@@ -152,7 +150,7 @@
       <!-- Current Bowler Card -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md flex justify-between items-center text-xs">
         <div>
-          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Bowler</span>
+          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Current Bowler</span>
           <span class="text-sm font-semibold text-white" id="currentBowlerName">--</span>
         </div>
         <div class="flex items-center gap-3 font-mono">
@@ -160,7 +158,7 @@
           <div><span class="text-slate-500">R:</span> <span id="bowlerRuns" class="font-bold text-white">0</span></div>
           <div><span class="text-slate-500">W:</span> <span id="bowlerWickets" class="font-bold text-emerald-400">0</span></div>
           <div><span class="text-slate-500">Econ:</span> <span id="bowlerEcon" class="font-bold text-slate-300">0.0</span></div>
-          <button onclick="openChangeBowlerModal()" class="scorer-control px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-bold hover:text-white">
+          <button onclick="openChangeBowlerModal(false)" class="scorer-control px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-bold hover:text-white">
             Change
           </button>
         </div>
@@ -187,7 +185,7 @@
             <span class="text-[9px] font-normal text-rose-400">Special</span>
           </button>
           <!-- WICKET BUTTON (No LBW) -->
-          <button onclick="openWicketModal()" class="h-12 rounded-xl bg-rose-650 bg-rose-600 hover:bg-rose-500 active:scale-95 text-base font-black text-white flex items-center justify-center gap-1 shadow">
+          <button onclick="openWicketModal()" class="h-12 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-base font-black text-white flex items-center justify-center gap-1 shadow">
             OUT
           </button>
         </div>
@@ -247,13 +245,10 @@
                 <th class="text-right">SR</th>
               </tr>
             </thead>
-            <tbody id="t1BattingTableBody" class="divide-y divide-slate-800/40 text-slate-200">
-              <!-- Dynamic Batting Rows -->
-            </tbody>
+            <tbody id="t1BattingTableBody" class="divide-y divide-slate-800/40 text-slate-200"></tbody>
           </table>
         </div>
 
-        <!-- Bowling Table Team 1 -->
         <div class="pt-3 border-t border-slate-800">
           <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bowling</div>
           <table class="w-full text-left text-xs">
@@ -266,9 +261,7 @@
                 <th class="text-right">Econ</th>
               </tr>
             </thead>
-            <tbody id="t1BowlingTableBody" class="divide-y divide-slate-800/40 text-slate-200">
-              <!-- Dynamic Bowling Rows -->
-            </tbody>
+            <tbody id="t1BowlingTableBody" class="divide-y divide-slate-800/40 text-slate-200"></tbody>
           </table>
         </div>
       </div>
@@ -291,13 +284,10 @@
                 <th class="text-right">SR</th>
               </tr>
             </thead>
-            <tbody id="t2BattingTableBody" class="divide-y divide-slate-800/40 text-slate-200">
-              <!-- Dynamic Batting Rows -->
-            </tbody>
+            <tbody id="t2BattingTableBody" class="divide-y divide-slate-800/40 text-slate-200"></tbody>
           </table>
         </div>
 
-        <!-- Bowling Table Team 2 -->
         <div class="pt-3 border-t border-slate-800">
           <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bowling</div>
           <table class="w-full text-left text-xs">
@@ -310,14 +300,11 @@
                 <th class="text-right">Econ</th>
               </tr>
             </thead>
-            <tbody id="t2BowlingTableBody" class="divide-y divide-slate-800/40 text-slate-200">
-              <!-- Dynamic Bowling Rows -->
-            </tbody>
+            <tbody id="t2BowlingTableBody" class="divide-y divide-slate-800/40 text-slate-200"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Save Match Button -->
       <div class="pt-2">
         <button onclick="archiveCurrentMatch()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs flex items-center justify-center gap-1.5 shadow-lg">
           <i data-lucide="save" class="w-4 h-4"></i> Complete & Save Match to Archive
@@ -337,9 +324,7 @@
         </button>
       </div>
 
-      <div id="historyListContainer" class="space-y-2.5">
-        <!-- Past matches injected dynamically -->
-      </div>
+      <div id="historyListContainer" class="space-y-2.5"></div>
     </div>
 
     <!-- ================= TAB: SETUP & SQUAD IMPORT ================= -->
@@ -375,13 +360,13 @@
         </div>
         
         <p class="text-xs text-slate-400">
-          Upload your weekend squad sheet. Column A for <strong>Team 1 Players</strong>, Column B for <strong>Team 2 Players</strong>.
+          Column A: <strong>Team 1 Players</strong>, Column B: <strong>Team 2 Players</strong>.
         </p>
 
         <label class="block border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-4 text-center cursor-pointer bg-slate-800/40 transition">
           <i data-lucide="file-spreadsheet" class="w-8 h-8 text-emerald-400 mx-auto mb-1"></i>
           <span class="text-xs font-semibold text-slate-200 block">Tap to select Excel/CSV file</span>
-          <span class="text-[10px] text-slate-500 block">Autofills playing XI for both teams</span>
+          <span class="text-[10px] text-slate-500 block">Autofills playing squads</span>
           <input type="file" id="excelRosterInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
         </label>
 
@@ -406,7 +391,7 @@
 
   <!-- ================= MODALS ================= -->
 
-  <!-- Wicket Modal (Custom: Bowled, Caught, Runout, Stumped, Hit Wicket. NO LBW) -->
+  <!-- Wicket Modal (No LBW) -->
   <div id="wicketModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -419,9 +404,7 @@
       <div class="space-y-2 text-xs">
         <div>
           <label class="text-slate-400 block mb-1">Who is out?</label>
-          <select id="wicketOutBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold">
-            <!-- Striker / Non-striker options -->
-          </select>
+          <select id="wicketOutBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
         </div>
 
         <div>
@@ -437,9 +420,7 @@
 
         <div>
           <label class="text-slate-400 block mb-1">Next Batter In</label>
-          <select id="wicketNextBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
-            <!-- Available fresh or retired batters -->
-          </select>
+          <select id="wicketNextBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></select>
         </div>
       </div>
 
@@ -450,7 +431,7 @@
     </div>
   </div>
 
-  <!-- Batter Retirement Modal (Triggered at 12 Consecutive Balls) -->
+  <!-- Batter Retirement Modal (12 Consecutive Balls) -->
   <div id="retirementModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-amber-500/50 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="text-center space-y-1">
@@ -463,9 +444,7 @@
 
       <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 space-y-2 text-xs">
         <label class="text-slate-300 font-bold block">Select Next Incoming Batter:</label>
-        <select id="retiredNextBatterSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-semibold">
-          <!-- Batters list -->
-        </select>
+        <select id="retiredNextBatterSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
         <p class="text-[10px] text-amber-300/80 leading-normal">
           * Note: Paused players can return to bat without ball limits after all other teammates are out.
         </p>
@@ -477,46 +456,53 @@
     </div>
   </div>
 
-  <!-- Change Bowler Modal -->
-  <div id="bowlerModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+  <!-- Mandatory Bowler Change Modal (Every 6 Balls) -->
+  <div id="bowlerModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-emerald-500/50 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-white text-sm">Select Next Bowler</h3>
-        <button onclick="closeChangeBowlerModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <div>
+          <h3 class="font-bold text-white text-sm" id="bowlerModalTitle">Over Complete — Change Bowler</h3>
+          <p class="text-[11px] text-emerald-400" id="bowlerModalSubtitle">6 balls bowled. Select the next bowler.</p>
+        </div>
+        <button id="bowlerModalCloseBtn" onclick="closeChangeBowlerModal()" class="text-slate-400 hover:text-white hidden">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
       </div>
 
-      <div class="text-xs space-y-1">
-        <label class="text-slate-400 block mb-1">Choose Bowler from Bowling Squad:</label>
-        <select id="newBowlerSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold">
-          <!-- Bowlers options -->
-        </select>
+      <div class="text-xs space-y-2">
+        <label class="text-slate-300 font-semibold block">Choose Next Bowler:</label>
+        <select id="newBowlerSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-semibold text-xs"></select>
+        <p class="text-[10px] text-slate-400 leading-normal" id="bowlerModalHint">
+          * A different bowler must bowl the next over.
+        </p>
       </div>
 
-      <div class="pt-2 flex gap-2">
-        <button onclick="closeChangeBowlerModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
-        <button onclick="confirmNewBowler()" class="w-1/2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Set Bowler</button>
+      <div class="pt-2">
+        <button onclick="confirmNewBowler()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">
+          Confirm Bowler & Start Over
+        </button>
       </div>
     </div>
   </div>
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    // State Store
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_state_v2';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v2';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_state_v3';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v3';
 
-    let currentRole = 'scorer'; // 'scorer' | 'viewer'
+    let currentRole = 'scorer';
+    let isMandatoryBowlerChange = false;
 
     let state = {
       team1: { name: 'Hawks', roster: ['Rohit', 'Virat', 'Surya', 'Hardik', 'Rinku', 'Axar'] },
       team2: { name: 'Tigers', roster: ['Bumrah', 'Shami', 'Kuldeep', 'Siraj', 'Arshdeep', 'Chahal'] },
       maxOvers: 10,
-      currentInning: 1, // 1 or 2
+      currentInning: 1,
       innings: [
         createNewInningObject('Hawks', 'Tigers'),
         createNewInningObject('Tigers', 'Hawks')
       ],
-      historyStack: [] // For undo support
+      historyStack: []
     };
 
     function createNewInningObject(battingTeamName, bowlingTeamName) {
@@ -525,21 +511,21 @@
         bowlingTeam: bowlingTeamName,
         totalRuns: 0,
         wickets: 0,
-        legalBalls: 0, // Overs = Math.floor(legalBalls / 6) + '.' + (legalBalls % 6)
+        legalBalls: 0,
+        overBallCount: 0, // 0 to 6 in current over
         extras: { wides: 0, noballs: 0 },
         cycleBallCount: 0, // 0 to 3 for strike swap
-        currentOverDeliveries: [], // Display pills
+        currentOverDeliveries: [],
         strikerIndex: 0,
         nonStrikerIndex: 1,
         currentBowlerIndex: 0,
-        batters: [], // Array of player stats
-        bowlers: [], // Array of bowler stats
+        batters: [],
+        bowlers: [],
         isLastManStanding: false,
         isInningComplete: false
       };
     }
 
-    // Initialize Batters & Bowlers on Match Start
     function initInningStats(inningIdx) {
       const inn = state.innings[inningIdx];
       const battingRoster = (inn.battingTeam === state.team1.name) ? state.team1.roster : state.team2.roster;
@@ -551,9 +537,9 @@
         balls: 0,
         fours: 0,
         sixes: 0,
-        stretchBalls: 0, // Resets to 0 if paused, max 12
+        stretchBalls: 0,
         isOut: false,
-        isPaused: false, // Retired after 12 balls
+        isPaused: false,
         dismissalText: 'not out',
         hasBatted: i < 2
       }));
@@ -569,9 +555,9 @@
       inn.nonStrikerIndex = 1;
       inn.currentBowlerIndex = 0;
       inn.cycleBallCount = 0;
+      inn.overBallCount = 0;
     }
 
-    // Boot App
     window.addEventListener('DOMContentLoaded', () => {
       loadState();
       if (!state.innings[0].batters || state.innings[0].batters.length === 0) {
@@ -582,7 +568,6 @@
       renderAll();
     });
 
-    // Save & Load LocalStorage
     function saveState() {
       localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(state));
     }
@@ -598,7 +583,6 @@
       }
     }
 
-    // Role Mode Toggle (Scorer vs Viewer)
     function toggleRoleMode() {
       currentRole = (currentRole === 'scorer') ? 'viewer' : 'scorer';
       document.getElementById('roleLabel').innerText = (currentRole === 'scorer') ? 'Scorer' : 'Viewer';
@@ -620,7 +604,6 @@
       }
     }
 
-    // Core Scoring Logic
     function pushStateForUndo() {
       state.historyStack.push(JSON.parse(JSON.stringify(state)));
       if (state.historyStack.length > 30) state.historyStack.shift();
@@ -631,8 +614,7 @@
         alert("No actions to undo!");
         return;
       }
-      const previous = state.historyStack.pop();
-      state = previous;
+      state = state.historyStack.pop();
       saveState();
       renderAll();
     }
@@ -647,38 +629,26 @@
       const striker = inn.batters[inn.strikerIndex];
       const bowler = inn.bowlers[inn.currentBowlerIndex];
 
-      // Update Batter Stats
       striker.runs += runs;
       striker.balls += 1;
       striker.stretchBalls += 1;
       if (runs === 4) striker.fours += 1;
       if (runs === 6) striker.sixes += 1;
 
-      // Update Bowler Stats
       bowler.ballsBowled += 1;
       bowler.runsConceded += runs;
 
-      // Update Inning Totals
       inn.totalRuns += runs;
       inn.legalBalls += 1;
+      inn.overBallCount += 1;
       inn.cycleBallCount += 1;
 
       inn.currentOverDeliveries.push({ type: 'run', text: runs.toString(), val: runs });
 
-      // Check Inning Complete / Target Chased
-      checkMatchProgress();
-
-      // Check Strike Rotation (Every 3 balls, NOT on 1 run)
-      handleStrikeCycle();
-
-      // Check 12 Ball Limit
-      checkStretchLimit(inn.strikerIndex);
-
-      saveState();
-      renderAll();
+      postBallEvaluation();
     }
 
-    // Special -2 Penalty Ball
+    // Special -2 Penalty Delivery
     function recordPenaltyMinus2() {
       const inn = currentInning();
       if (inn.isInningComplete) return;
@@ -688,32 +658,24 @@
       const striker = inn.batters[inn.strikerIndex];
       const bowler = inn.bowlers[inn.currentBowlerIndex];
 
-      // Deduct 2 runs from total
       inn.totalRuns -= 2;
-
-      // Batter ball count increments, runs reduce by 2
       striker.runs -= 2;
       striker.balls += 1;
       striker.stretchBalls += 1;
 
-      // Bowler delivery recorded
       bowler.ballsBowled += 1;
       bowler.runsConceded -= 2;
 
       inn.legalBalls += 1;
+      inn.overBallCount += 1;
       inn.cycleBallCount += 1;
 
       inn.currentOverDeliveries.push({ type: 'penalty', text: '-2', val: -2 });
 
-      checkMatchProgress();
-      handleStrikeCycle();
-      checkStretchLimit(inn.strikerIndex);
-
-      saveState();
-      renderAll();
+      postBallEvaluation();
     }
 
-    // Record Extra (Wide or No-Ball. NO Byes/Leg-byes)
+    // Record Extra (Wide, No Ball)
     function recordExtra(type) {
       const inn = currentInning();
       if (inn.isInningComplete) return;
@@ -738,22 +700,35 @@
       renderAll();
     }
 
-    // Strike Rotation: Every 3 Balls
+    // Evaluates state progression cleanly without halts
+    function postBallEvaluation() {
+      const inn = currentInning();
+
+      checkMatchProgress();
+      handleStrikeCycle();
+      const retired = checkStretchLimit(inn.strikerIndex);
+
+      // Check 6-ball over completion for mandatory bowler change
+      if (inn.overBallCount >= 6) {
+        inn.overBallCount = 0;
+        inn.currentOverDeliveries = []; // Reset visual pill container for new over
+        
+        if (!inn.isInningComplete && !retired) {
+          openChangeBowlerModal(true);
+        }
+      }
+
+      saveState();
+      renderAll();
+    }
+
     function handleStrikeCycle() {
       const inn = currentInning();
-      
-      // If 3 legal balls reached in current cycle
       if (inn.cycleBallCount >= 3) {
         inn.cycleBallCount = 0;
         if (!inn.isLastManStanding) {
           swapStrike();
         }
-      }
-
-      // Over completion (every 6 legal balls)
-      if (inn.legalBalls > 0 && inn.legalBalls % 6 === 0 && inn.currentOverDeliveries.length > 0) {
-        inn.currentOverDeliveries = []; // Clear timeline for next over
-        // Bowler change alert can trigger here
       }
     }
 
@@ -777,16 +752,17 @@
       renderAll();
     }
 
-    // 12-Ball Forced Pause/Retirement Check
     function checkStretchLimit(batterIdx) {
       const inn = currentInning();
       const batter = inn.batters[batterIdx];
 
       if (batter.stretchBalls >= 12 && !inn.isLastManStanding) {
         batter.isPaused = true;
-        batter.stretchBalls = 0; // Resets consecutive counter for when they return
+        batter.stretchBalls = 0;
         openRetirementModal(batter.name);
+        return true;
       }
+      return false;
     }
 
     function openRetirementModal(batterName) {
@@ -807,7 +783,6 @@
       });
 
       if (available.length === 0) {
-        // Last Man Standing triggered
         inn.isLastManStanding = true;
         closeRetirementModal();
       } else {
@@ -824,6 +799,12 @@
       inn.strikerIndex = nextIdx;
 
       closeRetirementModal();
+
+      // If over ended on this exact 12th ball, prompt for bowler now
+      if (inn.overBallCount === 0 && inn.legalBalls > 0 && inn.legalBalls % 6 === 0) {
+        openChangeBowlerModal(true);
+      }
+
       saveState();
       renderAll();
     }
@@ -832,7 +813,7 @@
       document.getElementById('retirementModal').classList.add('hidden');
     }
 
-    // Wickets (No LBW)
+    // Wickets
     function openWicketModal() {
       const inn = currentInning();
       const outSelect = document.getElementById('wicketOutBatterSelect');
@@ -881,17 +862,16 @@
       batterOut.dismissalText = manner;
       inn.wickets += 1;
 
-      // Bowler credit
       bowler.ballsBowled += 1;
       if (manner !== 'Run Out') {
         bowler.wickets += 1;
       }
 
       inn.legalBalls += 1;
+      inn.overBallCount += 1;
       inn.cycleBallCount += 1;
       inn.currentOverDeliveries.push({ type: 'wicket', text: 'W', val: 0 });
 
-      // Handle next batter or LMS
       if (nextIndex !== -1) {
         const nextBatter = inn.batters[nextIndex];
         nextBatter.hasBatted = true;
@@ -903,11 +883,9 @@
           inn.nonStrikerIndex = nextIndex;
         }
       } else {
-        // No fresh players remaining: check if 1 batter remains for LMS
         const activeNotOut = inn.batters.filter(b => !b.isOut);
         if (activeNotOut.length === 1) {
           inn.isLastManStanding = true;
-          // Set sole batter as striker
           inn.strikerIndex = inn.batters.indexOf(activeNotOut[0]);
         } else {
           inn.isInningComplete = true;
@@ -915,13 +893,9 @@
       }
 
       closeWicketModal();
-      checkMatchProgress();
-      handleStrikeCycle();
-      saveState();
-      renderAll();
+      postBallEvaluation();
     }
 
-    // Helper: Find Eligible Batters (Fresh First, Then Paused)
     function getEligibleBatters() {
       const inn = currentInning();
       const fresh = [];
@@ -937,21 +911,40 @@
         }
       });
 
-      // Custom Rule 5: Fresh players bat first. Once all members are out or batted, paused return.
       return fresh.length > 0 ? fresh : paused;
     }
 
-    // Bowler Modal
-    function openChangeBowlerModal() {
+    // Bowler Modal (Mandatory vs Manual)
+    function openChangeBowlerModal(isMandatory = false) {
+      isMandatoryBowlerChange = isMandatory;
       const inn = currentInning();
       const select = document.getElementById('newBowlerSelect');
       select.innerHTML = '';
 
+      const modalTitle = document.getElementById('bowlerModalTitle');
+      const modalSubtitle = document.getElementById('bowlerModalSubtitle');
+      const closeBtn = document.getElementById('bowlerModalCloseBtn');
+
+      if (isMandatory) {
+        modalTitle.innerText = "Over Complete — Change Bowler";
+        modalSubtitle.innerText = "6 legal balls bowled. A new bowler must take the next over.";
+        closeBtn.classList.add('hidden');
+      } else {
+        modalTitle.innerText = "Change Bowler";
+        modalSubtitle.innerText = "Select bowler to bowl:";
+        closeBtn.classList.remove('hidden');
+      }
+
       inn.bowlers.forEach((b, idx) => {
+        // In mandatory change, prevent picking the identical bowler who just finished
+        const isCurrent = (idx === inn.currentBowlerIndex);
+        if (isMandatory && isCurrent && inn.bowlers.length > 1) {
+          return; // Skip consecutive over by same bowler
+        }
+
         const opt = document.createElement('option');
         opt.value = idx;
         opt.innerText = `${b.name} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded} r, ${b.wickets} w)`;
-        if (idx === inn.currentBowlerIndex) opt.selected = true;
         select.appendChild(opt);
       });
 
@@ -959,18 +952,23 @@
     }
 
     function closeChangeBowlerModal() {
+      if (isMandatoryBowlerChange) return; // Prevent dismissing without picking
       document.getElementById('bowlerModal').classList.add('hidden');
     }
 
     function confirmNewBowler() {
       const inn = currentInning();
-      inn.currentBowlerIndex = parseInt(document.getElementById('newBowlerSelect').value);
-      closeChangeBowlerModal();
+      const select = document.getElementById('newBowlerSelect');
+      if (select.value === "") return;
+
+      inn.currentBowlerIndex = parseInt(select.value);
+      isMandatoryBowlerChange = false;
+      document.getElementById('bowlerModal').classList.add('hidden');
       saveState();
       renderAll();
     }
 
-    // Match Progress & Targets
+    // Match Progress Checks
     function checkMatchProgress() {
       const inn = currentInning();
       const maxBalls = state.maxOvers * 6;
@@ -979,7 +977,6 @@
         inn.isInningComplete = true;
       }
 
-      // Check 2nd Innings Target Chase
       if (state.currentInning === 2) {
         const target = state.innings[0].totalRuns + 1;
         if (inn.totalRuns >= target) {
@@ -998,7 +995,7 @@
       return state.innings[state.currentInning - 1];
     }
 
-    // Roster / Excel Upload
+    // Excel / CSV Upload
     function handleExcelUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1015,7 +1012,6 @@
           const t2List = [];
 
           rows.forEach((row, i) => {
-            // Ignore header row if it contains 'team' or 'player'
             if (i === 0 && row[0] && (row[0].toString().toLowerCase().includes('team') || row[0].toString().toLowerCase().includes('player'))) {
               return;
             }
@@ -1026,7 +1022,7 @@
           if (t1List.length > 0) document.getElementById('setupT1Roster').value = t1List.join('\n');
           if (t2List.length > 0) document.getElementById('setupT2Roster').value = t2List.join('\n');
 
-          alert(`Successfully imported roster! Team 1: ${t1List.length} players, Team 2: ${t2List.length} players.`);
+          alert(`Successfully imported squads! Team 1: ${t1List.length} players, Team 2: ${t2List.length} players.`);
         } catch (err) {
           alert("Error parsing Excel file. Ensure simple two-column format.");
           console.error(err);
@@ -1067,7 +1063,7 @@
       alert("New match setup successfully applied!");
     }
 
-    // Match Archive & History Functions
+    // Match Archive & History
     function archiveCurrentMatch() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
@@ -1115,7 +1111,7 @@
         return;
       }
 
-      container.innerHTML = history.map((m, idx) => `
+      container.innerHTML = history.map((m) => `
         <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1.5 shadow">
           <div class="flex justify-between items-center text-[10px] text-slate-400">
             <span>${m.date}</span>
@@ -1144,7 +1140,6 @@
       }
     }
 
-    // Formatting Helpers
     function formatOvers(balls) {
       return `${Math.floor(balls / 6)}.${balls % 6}`;
     }
@@ -1154,21 +1149,19 @@
       return ((runs / balls) * 6).toFixed(2);
     }
 
-    // Render Master UI
     function renderAll() {
       const inn = currentInning();
 
-      // Header & Match Center
       document.getElementById('headerMatchStatus').innerText = `${inn.battingTeam} Batting`;
       document.getElementById('currentInningTitle').innerText = `${state.currentInning === 1 ? '1st' : '2nd'} Innings`;
-      document.getElementById('strikeRotatorCycle').innerText = `Cycle: ${inn.cycleBallCount}/3 Balls`;
+      document.getElementById('strikeRotatorCycle').innerText = `Strike Cycle: ${inn.cycleBallCount}/3 Balls`;
+      document.getElementById('overBallCounterDisplay').innerText = `${inn.overBallCount}/6`;
       document.getElementById('battingTeamDisplay').innerText = inn.battingTeam;
       document.getElementById('liveScore').innerText = `${inn.totalRuns}-${inn.wickets}`;
       document.getElementById('liveOvers').innerText = formatOvers(inn.legalBalls);
       document.getElementById('maxOversDisplay').innerText = state.maxOvers;
       document.getElementById('crrDisplay').innerText = calcRunRate(inn.totalRuns, inn.legalBalls);
 
-      // Target & RRR (2nd Innings)
       if (state.currentInning === 2) {
         const target = state.innings[0].totalRuns + 1;
         document.getElementById('targetDisplay').innerText = `Target: ${target}`;
@@ -1181,7 +1174,6 @@
         document.getElementById('rrrContainer').style.display = 'none';
       }
 
-      // Timeline Deliveries
       const timeline = document.getElementById('thisOverTimeline');
       timeline.innerHTML = '<span class="text-[11px] text-slate-500 font-bold mr-1 uppercase">This Over:</span>';
       inn.currentOverDeliveries.forEach(d => {
@@ -1193,7 +1185,6 @@
         timeline.innerHTML += `<span class="w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-mono shrink-0 ${bg}">${d.text}</span>`;
       });
 
-      // Active Batters Rendering
       const striker = inn.batters[inn.strikerIndex];
       const nonStriker = inn.batters[inn.nonStrikerIndex];
 
@@ -1224,7 +1215,6 @@
         document.getElementById('nonStrikerSR').innerText = nonStriker.balls > 0 ? ((nonStriker.runs / nonStriker.balls) * 100).toFixed(0) : '0.0';
       }
 
-      // Bowler Rendering
       const bowler = inn.bowlers[inn.currentBowlerIndex];
       if (bowler) {
         document.getElementById('currentBowlerName').innerText = bowler.name;
@@ -1269,7 +1259,6 @@
         </tr>
       `).join('');
 
-      // Team 2 Table (if started)
       if (state.currentInning === 2 || inn2.legalBalls > 0) {
         document.getElementById('t2InningsContainer').classList.remove('hidden');
         document.getElementById('t2ScorecardHeader').innerText = `${inn2.battingTeam} Batting`;
@@ -1302,7 +1291,6 @@
       }
     }
 
-    // Tab Switching
     function switchTab(tabId) {
       ['match', 'scorecard', 'history', 'setup'].forEach(t => {
         document.getElementById(`tab${capitalize(t)}`).classList.add('hidden');
@@ -1319,7 +1307,6 @@
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
-    // Share / Copy Summary to WhatsApp
     function copyMatchSummary() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
@@ -1340,7 +1327,6 @@
       });
     }
 
-    // Export JSON File
     function exportMatchJSON() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
       const downloadAnchor = document.createElement('a');
