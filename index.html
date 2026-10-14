@@ -28,11 +28,13 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <button id="modeToggleBtn" onclick="toggleRoleMode()" class="px-2.5 py-1 rounded-full text-xs font-bold border border-emerald-500/40 bg-emerald-950/60 text-emerald-300 flex items-center gap-1.5 transition">
-        <i data-lucide="edit-3" class="w-3 h-3"></i>
-        <span id="roleLabel">Scorer</span>
+      <!-- Role Toggle Button (PIN Protected) -->
+      <button id="modeToggleBtn" onclick="handleRoleToggle()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700">
+        <i data-lucide="eye" id="roleIcon" class="w-3 h-3 text-slate-400"></i>
+        <span id="roleLabel">Viewer</span>
       </button>
       
+      <!-- New Match Button (Requires Scorer Role) -->
       <button onclick="confirmNewMatch()" class="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white" title="New Match">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
       </button>
@@ -60,6 +62,17 @@
 
     <!-- ================= TAB: MATCH / SCORING CONSOLE ================= -->
     <div id="tabMatch" class="space-y-3">
+
+      <!-- Viewer Banner (Displayed for Spectators) -->
+      <div id="viewerBanner" class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center text-xs text-slate-400 flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span><strong>Viewer Mode:</strong> Read-only pitch scorecard</span>
+        </span>
+        <button onclick="openPinModal()" class="text-emerald-400 font-bold underline hover:text-emerald-300 text-[11px]">
+          Unlock Scorer
+        </button>
+      </div>
 
       <!-- Winner Notification Banner -->
       <div id="matchWinnerBanner" class="hidden bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-slate-950 p-3.5 rounded-2xl shadow-xl flex items-center justify-between border border-amber-300 animate-pulse">
@@ -197,7 +210,7 @@
         </div>
       </div>
 
-      <!-- SCORER KEYPAD -->
+      <!-- SCORER KEYPAD (Locked in Viewer Mode) -->
       <div id="scorerKeypad" class="scorer-control bg-slate-900 rounded-2xl border border-slate-800 p-3 shadow-lg space-y-2.5">
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
           <span>Scoring Pad (Strike swaps automatically after 3 balls)</span>
@@ -236,17 +249,10 @@
           </button>
         </div>
       </div>
-
-      <!-- Viewer Alert Banner -->
-      <div id="viewerBanner" class="hidden p-3 rounded-xl bg-slate-900 border border-slate-800 text-center text-xs text-slate-400">
-        👀 <span class="font-bold text-slate-300">Viewer Mode Active.</span> Live scorecard updates pitch-side.
-      </div>
     </div>
 
     <!-- ================= TAB: SCORECARD ================= -->
     <div id="tabScorecard" class="hidden space-y-4">
-
-      <!-- Winner Scorecard Banner -->
       <div id="scorecardWinnerBanner" class="hidden bg-slate-900 border border-amber-500/50 p-4 rounded-xl shadow-lg space-y-1 text-center">
         <span class="text-2xl">🏆</span>
         <h3 class="font-black text-amber-400 text-base" id="scorecardWinnerText">Match Finished</h3>
@@ -371,7 +377,10 @@
     <!-- ================= TAB: SETUP & SQUAD IMPORT ================= -->
     <div id="tabSetup" class="hidden space-y-4">
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
-        <h3 class="font-bold text-white text-sm border-b border-slate-800 pb-2">Match Configuration</h3>
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="font-bold text-white text-sm">Match Configuration</h3>
+          <span class="text-[10px] text-emerald-400 font-bold">PIN Security</span>
+        </div>
         
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -395,14 +404,15 @@
             <input type="number" id="setupMaxOvers" value="10" min="1" max="50" onchange="updateOversDisplay()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
             <span class="text-[10px] text-slate-500" id="setupTotalBallsCalc">= 60 Legal Balls Total</span>
           </div>
+          <!-- 4-Digit Scorer PIN -->
           <div>
-            <label class="text-xs text-slate-400 block mb-1">Max Stretch / Pause</label>
-            <input type="text" value="Opt: 6b / Force: 12b (∞ on return)" disabled class="w-full bg-slate-850 border border-slate-700/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-400 font-mono font-bold">
+            <label class="text-xs text-amber-400 font-bold block mb-1">Scorer PIN (4 Digits)</label>
+            <input type="password" id="setupScorerPin" maxlength="4" value="1234" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono font-bold tracking-widest text-center">
           </div>
         </div>
       </div>
 
-      <!-- Opening Lineup Configuration (1st Innings) -->
+      <!-- Opening Lineup Configuration -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <h3 class="font-bold text-white text-sm border-b border-slate-800 pb-2">1st Innings: Opening Lineup</h3>
         <div class="space-y-2 text-xs">
@@ -450,7 +460,7 @@
           </div>
         </div>
 
-        <button onclick="applySetupAndReset()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
+        <button onclick="applySetupAndReset()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
           Apply Setup & Start Match
         </button>
       </div>
@@ -458,7 +468,28 @@
 
   </main>
 
-  <!-- ================= MODALS ================= -->
+  <!-- ================= PIN AUTH MODAL ================= -->
+  <div id="pinAuthModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl text-center">
+      <div class="w-12 h-12 bg-emerald-950/80 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto text-xl text-emerald-400">
+        <i data-lucide="shield-check" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="font-black text-white text-base">Enter Scorer PIN</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Authentication required to record deliveries</p>
+      </div>
+
+      <div>
+        <input type="password" id="pinInputEntry" maxlength="4" placeholder="••••" class="w-36 mx-auto bg-slate-800 border-2 border-slate-700 focus:border-emerald-500 rounded-xl p-2.5 text-center text-xl tracking-widest text-emerald-300 font-mono font-bold focus:outline-none">
+        <p id="pinErrorMsg" class="text-rose-400 text-xs font-semibold mt-1.5 hidden">Incorrect PIN. Try again.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button onclick="closePinModal()" class="py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button onclick="verifyScorerPin()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Unlock</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 2nd Innings Opening Lineup Modal -->
   <div id="inningsTransitionModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
@@ -607,10 +638,10 @@
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v19_unlimited_return';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v19_unlimited_return';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v20_pin_protected';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v20_pin_protected';
 
-    let currentRole = 'scorer';
+    let currentRole = 'viewer'; // Default to viewer for tamper protection
     let pendingRetirementCheck = false;
     let voluntaryPauseRole = null;
     let isActionLocked = false;
@@ -622,6 +653,7 @@
       currentInning: 1,
       matchWinner: null,
       matchResultText: null,
+      scorerPin: '1234',
       innings: [
         createNewInningObject('Hawks', 'Tigers'),
         createNewInningObject('Tigers', 'Hawks')
@@ -664,7 +696,7 @@
         stretchBalls: 0,
         isOut: false,
         isPaused: false,
-        isExemptFromLimit: false, // Set to true when returning in 2nd spell
+        isExemptFromLimit: false,
         isRetiredHurt: false,
         dismissalText: 'not out',
         hasBatted: (i === sIdx || i === nsIdx)
@@ -694,6 +726,7 @@
       lucide.createIcons();
       updateOversDisplay();
       refreshLineupSelectors();
+      applyRoleUI();
       renderAll();
     });
 
@@ -710,6 +743,66 @@
           console.error("State parse error", e);
         }
       }
+    }
+
+    // Role & PIN Verification
+    function handleRoleToggle() {
+      if (currentRole === 'scorer') {
+        currentRole = 'viewer';
+        applyRoleUI();
+        renderAll();
+      } else {
+        openPinModal();
+      }
+    }
+
+    function openPinModal() {
+      document.getElementById('pinInputEntry').value = '';
+      document.getElementById('pinErrorMsg').classList.add('hidden');
+      document.getElementById('pinAuthModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('pinInputEntry').focus(), 100);
+    }
+
+    function closePinModal() {
+      document.getElementById('pinAuthModal').classList.add('hidden');
+    }
+
+    function verifyScorerPin() {
+      const input = document.getElementById('pinInputEntry').value.trim();
+      const expected = state.scorerPin || '1234';
+
+      if (input === expected) {
+        currentRole = 'scorer';
+        closePinModal();
+        applyRoleUI();
+        renderAll();
+      } else {
+        document.getElementById('pinErrorMsg').classList.remove('hidden');
+        document.getElementById('pinInputEntry').value = '';
+      }
+    }
+
+    function applyRoleUI() {
+      const btn = document.getElementById('modeToggleBtn');
+      const label = document.getElementById('roleLabel');
+      const icon = document.getElementById('roleIcon');
+      const controls = document.querySelectorAll('.scorer-control');
+      const banner = document.getElementById('viewerBanner');
+
+      if (currentRole === 'scorer') {
+        label.innerText = 'Scorer (Lock)';
+        btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-emerald-950/80 text-emerald-300 border-emerald-500/50";
+        icon.setAttribute('data-lucide', 'unlock');
+        banner.classList.add('hidden');
+        controls.forEach(el => el.classList.remove('hidden'));
+      } else {
+        label.innerText = 'Viewer (Locked)';
+        btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700";
+        icon.setAttribute('data-lucide', 'eye');
+        banner.classList.remove('hidden');
+        controls.forEach(el => el.classList.add('hidden'));
+      }
+      lucide.createIcons();
     }
 
     function recordStateForUndo() {
@@ -744,27 +837,6 @@
       renderAll();
     }
 
-    function toggleRoleMode() {
-      currentRole = (currentRole === 'scorer') ? 'viewer' : 'scorer';
-      document.getElementById('roleLabel').innerText = (currentRole === 'scorer') ? 'Scorer' : 'Viewer';
-      
-      const controls = document.querySelectorAll('.scorer-control');
-      controls.forEach(el => {
-        if (currentRole === 'viewer') {
-          el.classList.add('hidden');
-        } else {
-          el.classList.remove('hidden');
-        }
-      });
-
-      const banner = document.getElementById('viewerBanner');
-      if (currentRole === 'viewer') {
-        banner.classList.remove('hidden');
-      } else {
-        banner.classList.add('hidden');
-      }
-    }
-
     function isCaptain(playerName, teamName) {
       if (teamName === state.team1.name) return state.team1.captain === playerName;
       if (teamName === state.team2.name) return state.team2.captain === playerName;
@@ -775,7 +847,7 @@
       return isCaptain(playerName, teamName) ? `${playerName} (c)` : playerName;
     }
 
-    // Deliveries: 0, 1, 2, 3, 4, 6
+    // Scoring Engine
     function recordDelivery(runs) {
       if (isActionLocked) return;
       isActionLocked = true;
@@ -812,7 +884,6 @@
       processBallAftermath();
     }
 
-    // Special -2 Penalty Delivery
     function recordPenaltyMinus2() {
       if (isActionLocked) return;
       isActionLocked = true;
@@ -847,7 +918,6 @@
       processBallAftermath();
     }
 
-    // Instant Wide
     function recordInstantWide() {
       if (isActionLocked) return;
       isActionLocked = true;
@@ -875,7 +945,6 @@
       renderAll();
     }
 
-    // No Ball Modal (+0, +1, +2, +3, +4, +6)
     function openNoBallModal() {
       if (state.matchWinner) return;
       document.getElementById('noBallModal').classList.remove('hidden');
@@ -975,7 +1044,6 @@
       renderAll();
     }
 
-    // Check 12-ball forced pause (Only applies if batter is NOT exempt)
     function checkStretchLimit(batterIdx) {
       const inn = currentInning();
       if (inn.isLastManStanding) return false;
@@ -983,7 +1051,6 @@
       const batter = inn.batters[batterIdx];
       if (!batter) return false;
 
-      // Returning batters in 2nd spell are exempt from 12-ball limit
       if (batter.isExemptFromLimit) return false;
 
       if (batter.stretchBalls >= 12) {
@@ -1004,7 +1071,6 @@
       return false;
     }
 
-    // Captain Voluntary Pause
     function captainVoluntaryPause(role) {
       const inn = currentInning();
       const targetIdx = (role === 'striker') ? inn.strikerIndex : inn.nonStrikerIndex;
@@ -1076,7 +1142,6 @@
       const nextIdx = parseInt(select.value);
       const incomingBatter = inn.batters[nextIdx];
 
-      // If batter had previously batted or was paused, they are now exempt from limits
       if (incomingBatter.hasBatted || incomingBatter.isPaused) {
         incomingBatter.isExemptFromLimit = true;
       }
@@ -1180,7 +1245,6 @@
       if (nextIndex !== -1) {
         const nextBatter = inn.batters[nextIndex];
         
-        // If returning from pause, mark as exempt from 12-ball limits
         if (nextBatter.isPaused || nextBatter.hasBatted) {
           nextBatter.isExemptFromLimit = true;
         }
@@ -1199,7 +1263,7 @@
         if (activeNotOut.length === 1) {
           inn.isLastManStanding = true;
           inn.strikerIndex = inn.batters.indexOf(activeNotOut[0]);
-          activeNotOut[0].isExemptFromLimit = true; // Solo batter plays unlimited balls
+          activeNotOut[0].isExemptFromLimit = true;
         } else {
           inn.isInningComplete = true;
         }
@@ -1224,7 +1288,6 @@
         }
       });
 
-      // Fresh players bat first. Once all fresh players have batted/out, paused return with unlimited balls.
       return fresh.length > 0 ? fresh : paused;
     }
 
@@ -1372,6 +1435,8 @@
       t1Striker.innerHTML = t1List.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${name}</option>`).join('');
       t1NonStriker.innerHTML = t1List.map((name, i) => `<option value="${i}" ${i === 1 ? 'selected' : ''}>${name}</option>`).join('');
       t2Bowler.innerHTML = t2List.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${name}</option>`).join('');
+
+      document.getElementById('setupScorerPin').value = state.scorerPin || '1234';
     }
 
     function handleExcelUpload(event) {
@@ -1414,6 +1479,7 @@
       const t1Name = document.getElementById('setupTeam1Name').value.trim() || 'Team 1';
       const t2Name = document.getElementById('setupTeam2Name').value.trim() || 'Team 2';
       const overs = parseInt(document.getElementById('setupMaxOvers').value) || 10;
+      const pin = document.getElementById('setupScorerPin').value.trim() || '1234';
 
       const t1Roster = document.getElementById('setupT1Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
       const t2Roster = document.getElementById('setupT2Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
@@ -1438,6 +1504,7 @@
       state.team1 = { name: t1Name, roster: t1Roster, captain: t1Captain };
       state.team2 = { name: t2Name, roster: t2Roster, captain: t2Captain };
       state.maxOvers = overs;
+      state.scorerPin = pin;
       state.currentInning = 1;
       state.matchWinner = null;
       state.matchResultText = null;
@@ -1453,7 +1520,7 @@
       saveState();
       switchTab('match');
       renderAll();
-      alert("Match setup successfully applied with your chosen opening lineup!");
+      alert(`Setup applied! Match PIN set to ${pin}`);
     }
 
     function archiveCurrentMatch() {
@@ -1513,6 +1580,10 @@
     }
 
     function confirmNewMatch() {
+      if (currentRole !== 'scorer') {
+        alert("Unlock Scorer Mode with PIN first to reset or start a new match.");
+        return;
+      }
       if (confirm("Reset current match data? Make sure you archive first if needed.")) {
         localStorage.removeItem(MATCH_STORAGE_KEY);
         location.reload();
@@ -1629,8 +1700,6 @@
       if (striker) {
         const sName = getFormattedPlayerName(striker.name, inn.battingTeam);
         document.getElementById('strikerNameDisplay').innerText = `${sName} - ${striker.runs}* (${striker.balls}b)`;
-        
-        // Show infinity symbol if returning exempt from limit
         document.getElementById('strikerStretch').innerText = striker.isExemptFromLimit ? '∞' : `${striker.stretchBalls}/12`;
         document.getElementById('strikerRuns').innerText = striker.runs;
         document.getElementById('strikerBalls').innerText = striker.balls;
@@ -1659,8 +1728,6 @@
         document.getElementById('lmsBadge').classList.add('hidden');
         const nsName = getFormattedPlayerName(nonStriker.name, inn.battingTeam);
         document.getElementById('nonStrikerNameDisplay').innerText = `${nsName} - ${nonStriker.runs} (${nonStriker.balls}b)`;
-        
-        // Show infinity symbol if returning exempt from limit
         document.getElementById('nonStrikerStretch').innerText = nonStriker.isExemptFromLimit ? '∞' : `${nonStriker.stretchBalls}/12`;
         document.getElementById('nonStrikerRuns').innerText = nonStriker.runs;
         document.getElementById('nonStrikerBalls').innerText = nonStriker.balls;
@@ -1786,6 +1853,7 @@
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
+    // Comprehensive WhatsApp Summary Report
     function copyMatchSummary() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
