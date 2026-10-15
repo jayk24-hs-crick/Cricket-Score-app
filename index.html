@@ -28,13 +28,11 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <!-- Role Toggle Button (PIN Protected) -->
       <button id="modeToggleBtn" onclick="handleRoleToggle()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700">
         <i data-lucide="eye" id="roleIcon" class="w-3 h-3 text-slate-400"></i>
         <span id="roleLabel">Viewer</span>
       </button>
       
-      <!-- New Match Button (Requires Scorer Role) -->
       <button onclick="confirmNewMatch()" class="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white" title="New Match">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
       </button>
@@ -63,7 +61,7 @@
     <!-- ================= TAB: MATCH / SCORING CONSOLE ================= -->
     <div id="tabMatch" class="space-y-3">
 
-      <!-- Viewer Banner (Displayed for Spectators) -->
+      <!-- Viewer Banner -->
       <div id="viewerBanner" class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center text-xs text-slate-400 flex items-center justify-between">
         <span class="flex items-center gap-1.5">
           <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
@@ -154,11 +152,6 @@
               <span class="text-emerald-300" id="strikerSR">0.0</span>
             </div>
           </div>
-          <div id="strikerCaptainPauseContainer" class="hidden text-right pt-0.5">
-            <button onclick="captainVoluntaryPause('striker')" class="scorer-control px-2 py-0.5 rounded bg-amber-900/60 border border-amber-500/60 text-amber-200 text-[10px] font-bold hover:bg-amber-800">
-              ⏸️ Captain's Call: Pause Batter (6+ balls)
-            </button>
-          </div>
         </div>
 
         <!-- Non-Striker Row -->
@@ -174,11 +167,6 @@
               <span class="text-slate-500"><span id="nonStrikerFours">0</span>/<span id="nonStrikerSixes">0</span></span>
               <span class="text-slate-400" id="nonStrikerSR">0.0</span>
             </div>
-          </div>
-          <div id="nonStrikerCaptainPauseContainer" class="hidden text-right pt-0.5">
-            <button onclick="captainVoluntaryPause('nonStriker')" class="scorer-control px-2 py-0.5 rounded bg-amber-900/60 border border-amber-500/60 text-amber-200 text-[10px] font-bold hover:bg-amber-800">
-              ⏸️ Captain's Call: Pause Batter (6+ balls)
-            </button>
           </div>
         </div>
 
@@ -210,14 +198,14 @@
         </div>
       </div>
 
-      <!-- SCORER KEYPAD (Locked in Viewer Mode) -->
+      <!-- SCORER KEYPAD -->
       <div id="scorerKeypad" class="scorer-control bg-slate-900 rounded-2xl border border-slate-800 p-3 shadow-lg space-y-2.5">
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
           <span>Scoring Pad (Strike swaps automatically after 3 balls)</span>
           <span class="text-emerald-400 font-normal">No LBW / Byes</span>
         </div>
 
-        <!-- Primary Runs Grid -->
+        <!-- Primary Runs Grid (8 Keys) -->
         <div class="grid grid-cols-4 gap-2">
           <button onclick="recordDelivery(0)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">0</button>
           <button onclick="recordDelivery(1)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">1</button>
@@ -225,26 +213,35 @@
           <button onclick="recordDelivery(3)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">3</button>
           <button onclick="recordDelivery(4)" class="h-12 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 active:scale-95 text-lg font-black text-emerald-300 shadow">4</button>
           <button onclick="recordDelivery(6)" class="h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-lg font-black text-white shadow">6</button>
-          <button onclick="recordPenaltyMinus2()" class="h-12 rounded-xl bg-rose-950/90 border border-rose-600/70 hover:bg-rose-900 active:scale-95 text-sm font-black text-rose-300 flex flex-col items-center justify-center leading-tight shadow">
-            <span>-2 Runs</span>
-            <span class="text-[9px] font-normal text-rose-400">Special</span>
+          
+          <!-- OUT (Permanent Dismissal) -->
+          <button onclick="openWicketModal()" class="h-12 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-sm font-black text-white flex flex-col items-center justify-center leading-tight shadow border border-rose-500">
+            <span>OUT</span>
+            <span class="text-[8px] font-normal text-rose-200">Cannot return</span>
           </button>
-          <button onclick="openWicketModal()" class="h-12 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-base font-black text-white flex items-center justify-center gap-1 shadow">
-            OUT / RET
+          
+          <!-- RETD (Tactical Step-Out / Can return anytime) -->
+          <button onclick="openRetdModal()" class="h-12 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-sm font-black text-slate-950 flex flex-col items-center justify-center leading-tight shadow border border-amber-400">
+            <span>RETD</span>
+            <span class="text-[8px] font-bold text-amber-950">Can return</span>
           </button>
         </div>
 
-        <!-- Extras & Undo Row -->
-        <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800">
-          <button onclick="recordInstantWide()" class="py-2.5 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
+        <!-- Extras, Penalty & Undo Row -->
+        <div class="grid grid-cols-4 gap-2 pt-1 border-t border-slate-800">
+          <button onclick="recordPenaltyMinus2()" class="py-2 rounded-lg bg-rose-950/90 border border-rose-600/70 hover:bg-rose-900 active:scale-95 text-xs font-black text-rose-300 flex flex-col items-center justify-center leading-tight shadow">
+            <span>-2 Runs</span>
+            <span class="text-[8px] font-normal text-rose-400">Special</span>
+          </button>
+          <button onclick="recordInstantWide()" class="py-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
             <span>Wide (+1)</span>
-            <span class="text-[8px] text-amber-400/80 font-normal mt-0.5">(ball not counted)</span>
+            <span class="text-[8px] text-amber-400/80 font-normal">(no ball)</span>
           </button>
-          <button onclick="openNoBallModal()" class="py-2.5 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
+          <button onclick="openNoBallModal()" class="py-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
             <span>No Ball (+1)</span>
-            <span class="text-[8px] text-amber-400/80 font-normal mt-0.5">(tap for runs)</span>
+            <span class="text-[8px] text-amber-400/80 font-normal">(bat runs)</span>
           </button>
-          <button id="undoActionBtn" onclick="undoLastBall()" class="py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-700 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+          <button id="undoActionBtn" onclick="undoLastBall()" class="py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-700 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
             <i data-lucide="undo" class="w-3.5 h-3.5 text-rose-400"></i> Undo
           </button>
         </div>
@@ -404,7 +401,6 @@
             <input type="number" id="setupMaxOvers" value="10" min="1" max="50" onchange="updateOversDisplay()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
             <span class="text-[10px] text-slate-500" id="setupTotalBallsCalc">= 60 Legal Balls Total</span>
           </div>
-          <!-- 4-Digit Scorer PIN -->
           <div>
             <label class="text-xs text-amber-400 font-bold block mb-1">Scorer PIN (4 Digits)</label>
             <input type="password" id="setupScorerPin" maxlength="4" value="2405" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono font-bold tracking-widest text-center">
@@ -468,7 +464,9 @@
 
   </main>
 
-  <!-- ================= PIN AUTH MODAL ================= -->
+  <!-- ================= MODALS ================= -->
+
+  <!-- PIN AUTH MODAL -->
   <div id="pinAuthModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl text-center">
       <div class="w-12 h-12 bg-emerald-950/80 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto text-xl text-emerald-400">
@@ -488,6 +486,103 @@
         <button onclick="closePinModal()" class="py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
         <button onclick="verifyScorerPin()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Unlock</button>
       </div>
+    </div>
+  </div>
+
+  <!-- DISMISSAL MODAL (OUT - CANNOT RETURN) -->
+  <div id="wicketModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-rose-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
+          <span class="text-rose-500 font-black">OUT (Dismissal)</span>
+        </h3>
+        <button onclick="closeWicketModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <p class="text-[11px] text-rose-300/80">Batsman is permanently out and cannot bat again in this innings.</p>
+
+      <div class="space-y-2 text-xs">
+        <div>
+          <label class="text-slate-400 block mb-1">Which Batter is Out?</label>
+          <select id="wicketOutBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Dismissal Manner</label>
+          <select id="wicketDismissalType" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+            <option value="Bowled">Bowled</option>
+            <option value="Caught">Caught</option>
+            <option value="Run Out">Run Out</option>
+            <option value="Stumped">Stumped</option>
+            <option value="Hit Wicket">Hit Wicket</option>
+            <option value="Retired Hurt">⚠️ Retired Hurt (Injured - Out)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Next Incoming Batter</label>
+          <select id="wicketNextBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
+        </div>
+      </div>
+
+      <div class="pt-2 flex gap-2">
+        <button onclick="closeWicketModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button onclick="confirmWicket()" class="w-1/2 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs">Confirm Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RETD MODAL (STEP-OUT - CAN RETURN LATER) -->
+  <div id="retdModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
+          <span class="text-amber-400 font-black">RETD (Tactical Step-Out)</span>
+        </h3>
+        <button onclick="closeRetdModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <p class="text-[11px] text-amber-300/80">Batsman pauses now. <strong>Can be recalled by captain anytime</strong> to continue their ball count.</p>
+
+      <div class="space-y-2 text-xs">
+        <div>
+          <label class="text-slate-400 block mb-1">Which Batter is Stepping Out?</label>
+          <select id="retdTargetBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Next Incoming Batter</label>
+          <select id="retdNextBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
+        </div>
+      </div>
+
+      <div class="pt-2 flex gap-2">
+        <button onclick="closeRetdModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button onclick="confirmRetd()" class="w-1/2 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs">Confirm RETD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12-BALL FORCED PAUSE MODAL -->
+  <div id="forcedPauseModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/50 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="text-center space-y-1">
+        <div class="text-2xl">⏱️</div>
+        <h3 class="font-extrabold text-amber-400 text-base">12 Balls Limit Reached!</h3>
+        <p class="text-xs text-slate-300" id="forcedPauseMsg">Batsman faced 12 consecutive balls and must pause.</p>
+      </div>
+
+      <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 space-y-2 text-xs">
+        <label class="text-slate-300 font-bold block">Select Next Incoming Batter:</label>
+        <select id="forcedPauseNextBatterSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
+        <p class="text-[10px] text-amber-300/80 leading-normal">
+          * Note: Player can return later to continue batting once all other teammates have batted or are out.
+        </p>
+      </div>
+
+      <button onclick="confirmForcedPause()" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
+        Confirm Substitution
+      </button>
     </div>
   </div>
 
@@ -550,71 +645,6 @@
     </div>
   </div>
 
-  <!-- Wicket / Retired Hurt Modal -->
-  <div id="wicketModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
-          <span class="text-rose-500 font-black">Out or Retired Hurt</span>
-        </h3>
-        <button onclick="closeWicketModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
-      </div>
-
-      <div class="space-y-2 text-xs">
-        <div>
-          <label class="text-slate-400 block mb-1">Which Batter?</label>
-          <select id="wicketOutBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
-        </div>
-
-        <div>
-          <label class="text-slate-400 block mb-1">Dismissal Reason / Status</label>
-          <select id="wicketDismissalType" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
-            <option value="Bowled">Bowled</option>
-            <option value="Caught">Caught</option>
-            <option value="Run Out">Run Out</option>
-            <option value="Stumped">Stumped</option>
-            <option value="Hit Wicket">Hit Wicket</option>
-            <option value="Retired Hurt">⚠️ Retired Hurt (Injured)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="text-slate-400 block mb-1">Next Batter In</label>
-          <select id="wicketNextBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></select>
-        </div>
-      </div>
-
-      <div class="pt-2 flex gap-2">
-        <button onclick="closeWicketModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
-        <button onclick="confirmWicket()" class="w-1/2 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs">Confirm</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Batter Substitution Modal -->
-  <div id="retirementModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/50 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
-      <div class="text-center space-y-1">
-        <div class="text-2xl" id="retirementModalIcon">⏱️</div>
-        <h3 class="font-extrabold text-amber-400 text-base" id="retirementModalHeader">Tactical Substitution</h3>
-        <p class="text-xs text-slate-300" id="retirementModalMsg">Select next incoming batter:</p>
-      </div>
-
-      <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 space-y-2 text-xs">
-        <label class="text-slate-300 font-bold block">Select Next Incoming Batter:</label>
-        <select id="retiredNextBatterSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
-        <p class="text-[10px] text-amber-300/80 leading-normal" id="retirementModalSubRule">
-          * Note: Players returning in 2nd spell can play unlimited balls without 12-ball limits.
-        </p>
-      </div>
-
-      <div class="flex gap-2">
-        <button onclick="closeRetirementModal()" id="cancelVoluntaryPauseBtn" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs hidden">Cancel</button>
-        <button onclick="confirmRetirement()" id="confirmRetirementBtn" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">Confirm Substitution</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Mandatory Bowler Change Modal -->
   <div id="bowlerModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
@@ -638,12 +668,11 @@
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v20_pin_protected';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v20_pin_protected';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v22_captain_recall';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v22_captain_recall';
 
-    let currentRole = 'viewer'; // Default to viewer for tamper protection
+    let currentRole = 'viewer';
     let pendingRetirementCheck = false;
-    let voluntaryPauseRole = null;
     let isActionLocked = false;
 
     let state = {
@@ -693,10 +722,10 @@
         balls: 0,
         fours: 0,
         sixes: 0,
-        stretchBalls: 0,
-        isOut: false,
-        isPaused: false,
-        isExemptFromLimit: false,
+        stretchBalls: 0, // Ball count in current spell (pauses at 12)
+        isOut: false,     // Permanent dismissal
+        isPaused: false,  // RETD / Paused (can return anytime)
+        isExemptFromLimit: false, // Set to true when returning in 2nd spell
         isRetiredHurt: false,
         dismissalText: 'not out',
         hasBatted: (i === sIdx || i === nsIdx)
@@ -823,8 +852,9 @@
       }
 
       document.getElementById('bowlerModal').classList.add('hidden');
-      document.getElementById('retirementModal').classList.add('hidden');
+      document.getElementById('forcedPauseModal').classList.add('hidden');
       document.getElementById('wicketModal').classList.add('hidden');
+      document.getElementById('retdModal').classList.add('hidden');
       document.getElementById('noBallModal').classList.add('hidden');
 
       const previous = state.historyStack.pop();
@@ -847,7 +877,7 @@
       return isCaptain(playerName, teamName) ? `${playerName} (c)` : playerName;
     }
 
-    // Scoring Engine
+    // Scoring Pad Deliveries
     function recordDelivery(runs) {
       if (isActionLocked) return;
       isActionLocked = true;
@@ -1044,6 +1074,7 @@
       renderAll();
     }
 
+    // 12-ball forced pause check
     function checkStretchLimit(batterIdx) {
       const inn = currentInning();
       if (inn.isLastManStanding) return false;
@@ -1055,8 +1086,6 @@
 
       if (batter.stretchBalls >= 12) {
         batter.isPaused = true;
-        batter.stretchBalls = 0;
-        
         const available = getEligibleBatters();
         if (available.length === 0) {
           inn.isLastManStanding = true;
@@ -1064,99 +1093,47 @@
           batter.isExemptFromLimit = true;
           return false;
         } else {
-          openRetirementModal(batter.name, available, false, 'striker');
+          openForcedPauseModal(batter.name, available);
           return true;
         }
       }
       return false;
     }
 
-    function captainVoluntaryPause(role) {
-      const inn = currentInning();
-      const targetIdx = (role === 'striker') ? inn.strikerIndex : inn.nonStrikerIndex;
-      const batter = inn.batters[targetIdx];
-
-      if (batter.isExemptFromLimit) {
-        alert("This batsman is in their returning unlimited spell and does not need to pause!");
-        return;
-      }
-
-      if (batter.stretchBalls < 6) {
-        alert("Captain can only voluntarily pause a batsman who has faced at least 6 balls!");
-        return;
-      }
-
-      const available = getEligibleBatters();
-      if (available.length === 0) {
-        alert("No other eligible batsman available to substitute.");
-        return;
-      }
-
-      recordStateForUndo();
-      batter.isPaused = true;
-      batter.stretchBalls = 0;
-      openRetirementModal(batter.name, available, true, role);
-    }
-
-    function openRetirementModal(batterName, availableList, isVoluntary = false, role = 'striker') {
-      voluntaryPauseRole = role;
-      const modalHeader = document.getElementById('retirementModalHeader');
-      const modalMsg = document.getElementById('retirementModalMsg');
-      const modalIcon = document.getElementById('retirementModalIcon');
-      const cancelBtn = document.getElementById('cancelVoluntaryPauseBtn');
-      const confirmBtn = document.getElementById('confirmRetirementBtn');
-
-      if (isVoluntary) {
-        modalIcon.innerText = "📋";
-        modalHeader.innerText = "Captain's Tactical Substitution";
-        modalMsg.innerText = `${batterName} has faced >= 6 balls. Select incoming batsman:`;
-        cancelBtn.classList.remove('hidden');
-        confirmBtn.className = "w-1/2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg";
-      } else {
-        modalIcon.innerText = "⏱️";
-        modalHeader.innerText = "12 Balls Limit Reached!";
-        modalMsg.innerText = `${batterName} faced 12 consecutive balls and must pause. Select incoming batsman:`;
-        cancelBtn.classList.add('hidden');
-        confirmBtn.className = "w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg";
-      }
-
-      const select = document.getElementById('retiredNextBatterSelect');
+    function openForcedPauseModal(batterName, availableList) {
+      document.getElementById('forcedPauseMsg').innerText = `${batterName} faced 12 consecutive balls and must pause. Select incoming batter:`;
+      const select = document.getElementById('forcedPauseNextBatterSelect');
       select.innerHTML = '';
 
       availableList.forEach(b => {
         const opt = document.createElement('option');
         opt.value = b.originalIndex;
-        const tag = b.isPaused ? ' (Returning from pause - Unlimited balls)' : ' (Fresh)';
+        const tag = b.isPaused ? ` (Returning - Resumes at ${b.stretchBalls}/12 balls)` : ' (Fresh)';
         opt.innerText = getFormattedPlayerName(b.name, currentInning().battingTeam) + tag;
         select.appendChild(opt);
       });
 
-      document.getElementById('retirementModal').classList.remove('hidden');
+      document.getElementById('forcedPauseModal').classList.remove('hidden');
     }
 
-    function confirmRetirement() {
+    function confirmForcedPause() {
       const inn = currentInning();
-      const select = document.getElementById('retiredNextBatterSelect');
+      const select = document.getElementById('forcedPauseNextBatterSelect');
       if (select.value === "") return;
 
       const nextIdx = parseInt(select.value);
       const incomingBatter = inn.batters[nextIdx];
 
-      if (incomingBatter.hasBatted || incomingBatter.isPaused) {
+      const freshRemaining = inn.batters.filter(b => !b.isOut && !b.hasBatted && b.name !== incomingBatter.name);
+      if (freshRemaining.length === 0) {
         incomingBatter.isExemptFromLimit = true;
       }
 
       incomingBatter.hasBatted = true;
       incomingBatter.isPaused = false;
-      incomingBatter.stretchBalls = 0;
 
-      if (voluntaryPauseRole === 'nonStriker') {
-        inn.nonStrikerIndex = nextIdx;
-      } else {
-        inn.strikerIndex = nextIdx;
-      }
-
-      closeRetirementModal();
+      inn.strikerIndex = nextIdx;
+      document.getElementById('forcedPauseModal').classList.add('hidden');
 
       if (pendingRetirementCheck) {
         pendingRetirementCheck = false;
@@ -1167,11 +1144,9 @@
       renderAll();
     }
 
-    function closeRetirementModal() {
-      document.getElementById('retirementModal').classList.add('hidden');
-      voluntaryPauseRole = null;
-    }
-
+    // ==========================================
+    // OUT LOGIC (PERMANENT DISMISSAL)
+    // ==========================================
     function openWicketModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1188,7 +1163,7 @@
       available.forEach(b => {
         const opt = document.createElement('option');
         opt.value = b.originalIndex;
-        const tag = b.isPaused ? ' (Returning from pause - Unlimited balls)' : ' (Fresh)';
+        const tag = b.isPaused ? ` (Recall - Resumes at ${b.stretchBalls}/12 balls)` : ' (Fresh)';
         opt.innerText = getFormattedPlayerName(b.name, inn.battingTeam) + tag;
         nextSelect.appendChild(opt);
       });
@@ -1209,7 +1184,6 @@
 
     function confirmWicket() {
       const inn = currentInning();
-
       recordStateForUndo();
 
       const outIndex = parseInt(document.getElementById('wicketOutBatterSelect').value);
@@ -1223,35 +1197,29 @@
         inn.currentOverDeliveries = [];
       }
 
-      if (manner === "Retired Hurt") {
-        batterOut.isOut = true;
-        batterOut.isRetiredHurt = true;
-        batterOut.dismissalText = "retired hurt";
-        inn.currentOverDeliveries.push({ type: 'extra', text: 'RetHurt', val: 0 });
-      } else {
-        batterOut.isOut = true;
-        batterOut.balls += 1;
-        batterOut.dismissalText = manner;
-        inn.wickets += 1;
-        bowler.ballsBowled += 1;
-        if (manner !== 'Run Out') bowler.wickets += 1;
+      batterOut.isOut = true;
+      batterOut.isPaused = false;
+      batterOut.balls += 1;
+      batterOut.dismissalText = manner;
+      inn.wickets += 1;
+      bowler.ballsBowled += 1;
+      if (manner !== 'Run Out') bowler.wickets += 1;
 
-        inn.legalBalls += 1;
-        inn.overLegalBalls += 1;
-        inn.cycleBallCount += 1;
-        inn.currentOverDeliveries.push({ type: 'wicket', text: 'W', val: 0 });
-      }
+      inn.legalBalls += 1;
+      inn.overLegalBalls += 1;
+      inn.cycleBallCount += 1;
+      inn.currentOverDeliveries.push({ type: 'wicket', text: 'W', val: 0 });
 
       if (nextIndex !== -1) {
         const nextBatter = inn.batters[nextIndex];
         
-        if (nextBatter.isPaused || nextBatter.hasBatted) {
+        const freshRemaining = inn.batters.filter(b => !b.isOut && !b.hasBatted && b.name !== nextBatter.name);
+        if (freshRemaining.length === 0) {
           nextBatter.isExemptFromLimit = true;
         }
 
         nextBatter.hasBatted = true;
         nextBatter.isPaused = false;
-        nextBatter.stretchBalls = 0;
 
         if (outIndex === inn.strikerIndex) {
           inn.strikerIndex = nextIndex;
@@ -1273,6 +1241,75 @@
       processBallAftermath();
     }
 
+    // ==========================================
+    // RETD LOGIC (TACTICAL RETIREMENT - CAN RECALL ANYTIME)
+    // ==========================================
+    function openRetdModal() {
+      if (state.matchWinner) return;
+      const inn = currentInning();
+      const targetSelect = document.getElementById('retdTargetBatterSelect');
+      targetSelect.innerHTML = `
+        <option value="${inn.strikerIndex}">${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} (Striker - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
+        ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}">${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker - Faced${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
+      `;
+
+      const nextSelect = document.getElementById('retdNextBatterSelect');
+      nextSelect.innerHTML = '';
+      const available = getEligibleBatters();
+
+      if (available.length === 0) {
+        alert("No other eligible batsman available on the bench to substitute.");
+        return;
+      }
+
+      available.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.originalIndex;
+        const tag = b.isPaused ? ` (Recall - Resumes at ${b.stretchBalls}/12 balls)` : ' (Fresh)';
+        opt.innerText = getFormattedPlayerName(b.name, inn.battingTeam) + tag;
+        nextSelect.appendChild(opt);
+      });
+
+      document.getElementById('retdModal').classList.remove('hidden');
+    }
+
+    function closeRetdModal() {
+      document.getElementById('retdModal').classList.add('hidden');
+    }
+
+    function confirmRetd() {
+      const inn = currentInning();
+      recordStateForUndo();
+
+      const targetIndex = parseInt(document.getElementById('retdTargetBatterSelect').value);
+      const nextIndex = parseInt(document.getElementById('retdNextBatterSelect').value);
+
+      const retiringBatter = inn.batters[targetIndex];
+      const incomingBatter = inn.batters[nextIndex];
+
+      retiringBatter.isPaused = true;
+      retiringBatter.dismissalText = `retd (${retiringBatter.stretchBalls}b)`;
+
+      incomingBatter.hasBatted = true;
+      incomingBatter.isPaused = false;
+
+      const freshRemaining = inn.batters.filter(b => !b.isOut && !b.hasBatted && b.name !== incomingBatter.name);
+      if (freshRemaining.length === 0) {
+        incomingBatter.isExemptFromLimit = true;
+      }
+
+      if (targetIndex === inn.strikerIndex) {
+        inn.strikerIndex = nextIndex;
+      } else {
+        inn.nonStrikerIndex = nextIndex;
+      }
+
+      closeRetdModal();
+      saveState();
+      renderAll();
+    }
+
+    // Captain can recall paused players OR pick fresh players immediately
     function getEligibleBatters() {
       const inn = currentInning();
       const fresh = [];
@@ -1288,7 +1325,8 @@
         }
       });
 
-      return fresh.length > 0 ? fresh : paused;
+      // Both fresh and paused batters are immediately eligible for captain substitution
+      return [...fresh, ...paused];
     }
 
     function openMandatoryBowlerModal() {
@@ -1706,23 +1744,14 @@
         document.getElementById('strikerFours').innerText = striker.fours;
         document.getElementById('strikerSixes').innerText = striker.sixes;
         document.getElementById('strikerSR').innerText = striker.balls > 0 ? ((striker.runs / striker.balls) * 100).toFixed(0) : '0.0';
-
-        const sPauseContainer = document.getElementById('strikerCaptainPauseContainer');
-        if (striker.stretchBalls >= 6 && !striker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
-          sPauseContainer.classList.remove('hidden');
-        } else {
-          sPauseContainer.classList.add('hidden');
-        }
       }
 
       const nonStrikerRow = document.getElementById('nonStrikerRow');
-      const nsPauseContainer = document.getElementById('nonStrikerCaptainPauseContainer');
 
       if (inn.isLastManStanding || !nonStriker) {
         nonStrikerRow.classList.add('opacity-30');
         document.getElementById('nonStrikerNameDisplay').innerText = '(No Partner - LMS)';
         document.getElementById('lmsBadge').classList.remove('hidden');
-        nsPauseContainer.classList.add('hidden');
       } else {
         nonStrikerRow.classList.remove('opacity-30');
         document.getElementById('lmsBadge').classList.add('hidden');
@@ -1734,12 +1763,6 @@
         document.getElementById('nonStrikerFours').innerText = nonStriker.fours;
         document.getElementById('nonStrikerSixes').innerText = nonStriker.sixes;
         document.getElementById('nonStrikerSR').innerText = nonStriker.balls > 0 ? ((nonStriker.runs / nonStriker.balls) * 100).toFixed(0) : '0.0';
-
-        if (nonStriker.stretchBalls >= 6 && !nonStriker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
-          nsPauseContainer.classList.remove('hidden');
-        } else {
-          nsPauseContainer.classList.add('hidden');
-        }
       }
 
       // Bowler Rendering
@@ -1769,12 +1792,12 @@
       t1Body.innerHTML = inn1.batters.map(b => {
         let status = 'not out';
         if (b.isOut) status = b.dismissalText;
-        else if (b.isPaused) status = 'paused';
+        else if (b.isPaused) status = `retd (${b.stretchBalls}b)`;
         else if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
 
         return `
           <tr class="py-1">
-            <td class="py-1 font-medium ${b.isOut ? (b.isRetiredHurt ? 'text-amber-400' : 'text-slate-400') : 'text-emerald-400'}">
+            <td class="py-1 font-medium ${b.isOut ? 'text-slate-500' : (b.isPaused ? 'text-amber-400' : 'text-emerald-400')}">
               ${getFormattedPlayerName(b.name, inn1.battingTeam)} <span class="text-[10px] text-slate-500 font-normal">(${status})</span>
             </td>
             <td class="text-right font-bold text-white font-mono">${b.runs}</td>
@@ -1806,12 +1829,12 @@
         t2Body.innerHTML = inn2.batters.map(b => {
           let status = 'not out';
           if (b.isOut) status = b.dismissalText;
-          else if (b.isPaused) status = 'paused';
+          else if (b.isPaused) status = `retd (${b.stretchBalls}b)`;
           else if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
 
           return `
             <tr class="py-1">
-              <td class="py-1 font-medium ${b.isOut ? (b.isRetiredHurt ? 'text-amber-400' : 'text-slate-400') : 'text-emerald-400'}">
+              <td class="py-1 font-medium ${b.isOut ? 'text-slate-500' : (b.isPaused ? 'text-amber-400' : 'text-emerald-400')}">
                 ${getFormattedPlayerName(b.name, inn2.battingTeam)} <span class="text-[10px] text-slate-500 font-normal">(${status})</span>
               </td>
               <td class="text-right font-bold text-white font-mono">${b.runs}</td>
@@ -1853,7 +1876,6 @@
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
-    // Comprehensive WhatsApp Summary Report
     function copyMatchSummary() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
@@ -1867,7 +1889,6 @@
       }
       text += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      // 1st Innings
       text += `🏏 *1ST INNINGS: ${inn1.battingTeam.toUpperCase()}*\n`;
       text += `Score: *${inn1.totalRuns}/${inn1.wickets}* (${formatOvers(inn1.legalBalls)} ov)\n`;
       text += `Extras: ${inn1.extras.wides} WD, ${inn1.extras.noballs} NB\n\n`;
@@ -1875,7 +1896,7 @@
       text += `*Batting Figures:*\n`;
       inn1.batters.forEach(b => {
         const bName = getFormattedPlayerName(b.name, inn1.battingTeam);
-        let status = b.isOut ? b.dismissalText : (b.isPaused ? 'paused' : 'not out');
+        let status = b.isOut ? b.dismissalText : (b.isPaused ? `retd (${b.stretchBalls}b)` : 'not out');
         if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
         text += `• ${bName}: ${b.runs} (${b.balls}b, ${b.fours}x4, ${b.sixes}x6) - _${status}_\n`;
       });
@@ -1889,7 +1910,6 @@
 
       text += `\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      // 2nd Innings
       if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner) {
         text += `🏏 *2ND INNINGS: ${inn2.battingTeam.toUpperCase()}*\n`;
         text += `Score: *${inn2.totalRuns}/${inn2.wickets}* (${formatOvers(inn2.legalBalls)} ov)\n`;
@@ -1898,7 +1918,7 @@
         text += `*Batting Figures:*\n`;
         inn2.batters.forEach(b => {
           const bName = getFormattedPlayerName(b.name, inn2.battingTeam);
-          let status = b.isOut ? b.dismissalText : (b.isPaused ? 'paused' : 'not out');
+          let status = b.isOut ? b.dismissalText : (b.isPaused ? `retd (${b.stretchBalls}b)` : 'not out');
           if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
           text += `• ${bName}: ${b.runs} (${b.balls}b, ${b.fours}x4, ${b.sixes}x6) - _${status}_\n`;
         });
