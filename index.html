@@ -28,11 +28,13 @@
     </div>
     
     <div class="flex items-center gap-2">
+      <!-- Role Toggle Button (PIN Protected) -->
       <button id="modeToggleBtn" onclick="handleRoleToggle()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700">
         <i data-lucide="eye" id="roleIcon" class="w-3 h-3 text-slate-400"></i>
         <span id="roleLabel">Viewer</span>
       </button>
       
+      <!-- New Match Button (Requires Scorer Role) -->
       <button onclick="confirmNewMatch()" class="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white" title="New Match">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
       </button>
@@ -126,7 +128,7 @@
         </div>
       </div>
 
-      <!-- Active Batters Card (With Choose Batsman Option) -->
+      <!-- Active Batters Card (With 6-Ball Captain Alert Banners) -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md space-y-2">
         <div class="flex justify-between items-center text-xs text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800 pb-1.5">
           <span>Batter (Runs)</span>
@@ -139,7 +141,7 @@
         </div>
 
         <!-- Striker Row -->
-        <div id="strikerRow" class="flex flex-col gap-1 py-1 bg-emerald-950/30 -mx-1 px-2 rounded border border-emerald-500/20">
+        <div id="strikerRow" class="flex flex-col gap-1 py-1.5 bg-emerald-950/30 -mx-1 px-2 rounded-lg border border-emerald-500/20">
           <div class="flex justify-between items-center text-sm">
             <div class="flex items-center gap-1.5 font-semibold text-white">
               <span class="text-emerald-400 text-xs">🏏*</span>
@@ -152,10 +154,17 @@
               <span class="text-emerald-300" id="strikerSR">0.0</span>
             </div>
           </div>
+          <!-- 6-Ball Captain's Option Banner -->
+          <div id="strikerCaptainPauseContainer" class="hidden pt-1">
+            <button onclick="captainVoluntaryPause('striker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
+              <span class="text-xs">📋</span>
+              <span id="strikerCaptainBtnText">Captain's Call: Change Batsman (Faced 6+ balls)</span>
+            </button>
+          </div>
         </div>
 
         <!-- Non-Striker Row -->
-        <div id="nonStrikerRow" class="flex flex-col gap-1 py-1 px-1">
+        <div id="nonStrikerRow" class="flex flex-col gap-1 py-1.5 px-1 rounded-lg">
           <div class="flex justify-between items-center text-sm">
             <div class="flex items-center gap-1.5 text-slate-300">
               <span class="text-slate-500 text-xs pl-3.5"></span>
@@ -168,16 +177,22 @@
               <span class="text-slate-400" id="nonStrikerSR">0.0</span>
             </div>
           </div>
+          <!-- 6-Ball Captain's Option Banner -->
+          <div id="nonStrikerCaptainPauseContainer" class="hidden pt-1">
+            <button onclick="captainVoluntaryPause('nonStriker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
+              <span class="text-xs">📋</span>
+              <span id="nonStrikerCaptainBtnText">Captain's Call: Change Batsman (Faced 6+ balls)</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Strike Controls (Swap Ends & Choose Batsman) -->
+        <!-- Strike Controls -->
         <div class="pt-2 flex items-center justify-between border-t border-slate-800/80 gap-2">
           <div id="lmsBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded bg-purple-950 border border-purple-500/50 text-purple-300">
             LAST MAN STANDING (SOLO)
           </div>
           
           <div class="flex items-center gap-2 ml-auto">
-            <!-- Choose Batsman Modal Trigger -->
             <button onclick="openChooseBatterModal()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1.5 border border-emerald-500/40 transition">
               <i data-lucide="user-plus" class="w-3.5 h-3.5 text-emerald-400"></i> Choose Batsman
             </button>
@@ -472,7 +487,7 @@
 
   <!-- ================= MODALS ================= -->
 
-  <!-- CHOOSE BATSMAN MODAL (TACTICAL SELECTION) -->
+  <!-- CHOOSE BATSMAN MODAL -->
   <div id="chooseBatterModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -483,7 +498,7 @@
       </div>
 
       <p class="text-[11px] text-slate-400 leading-normal">
-        Pick who walks in. Players who have already faced 12 balls cannot return until everyone has played at least 6 balls or is out.
+        Pick who walks in. Players who faced 12 balls cannot return until everyone on the bench has faced at least 6 balls or is out.
       </p>
 
       <div class="space-y-2.5 text-xs">
@@ -615,7 +630,7 @@
         <label class="text-slate-300 font-bold block">Select Next Incoming Batter:</label>
         <select id="forcedPauseNextBatterSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
         <p class="text-[10px] text-amber-300/80 leading-normal">
-          * Note: Player can return later to continue batting once all other teammates have batted or are out.
+          * Note: Player can return later once all other teammates on the bench have batted at least 6 balls or are out.
         </p>
       </div>
 
@@ -707,8 +722,8 @@
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v23_choose_batsman';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v23_choose_batsman';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v25_full_rules';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v25_full_rules';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -761,10 +776,10 @@
         balls: 0,
         fours: 0,
         sixes: 0,
-        stretchBalls: 0, // Ball count in current spell (pauses at 12)
-        isOut: false,     // Permanent dismissal
-        isPaused: false,  // RETD / Paused
-        isExemptFromLimit: false, // Set to true when returning in unlimited spell
+        stretchBalls: 0,
+        isOut: false,
+        isPaused: false,
+        isExemptFromLimit: false,
         isRetiredHurt: false,
         dismissalText: 'not out',
         hasBatted: (i === sIdx || i === nsIdx)
@@ -1179,6 +1194,31 @@
       renderAll();
     }
 
+    // Captain Voluntary Change (Available once batter faces >= 6 balls)
+    function captainVoluntaryPause(role) {
+      const inn = currentInning();
+      const targetIdx = (role === 'striker') ? inn.strikerIndex : inn.nonStrikerIndex;
+      const batter = inn.batters[targetIdx];
+
+      if (batter.isExemptFromLimit) {
+        alert("This batsman is in their returning unlimited spell and does not need to pause!");
+        return;
+      }
+
+      if (batter.stretchBalls < 6) {
+        alert("Captain can only change a batsman who has faced at least 6 balls!");
+        return;
+      }
+
+      const available = getEligibleBatters();
+      if (available.length === 0) {
+        alert("No other eligible batsman available on the bench to substitute under match rules.");
+        return;
+      }
+
+      openRetdModal(role);
+    }
+
     // ========================================================
     // CHOOSE BATSMAN MODAL LOGIC (TACTICAL INNINGS SELECTION)
     // ========================================================
@@ -1231,11 +1271,9 @@
       const currentIdx = (position === 'striker') ? inn.strikerIndex : inn.nonStrikerIndex;
       const outgoingBatter = inn.batters[currentIdx];
 
-      // Outgoing batter steps off to the bench on pause (can return later)
       outgoingBatter.isPaused = true;
       outgoingBatter.dismissalText = `retd (${outgoingBatter.stretchBalls}b)`;
 
-      // Incoming batter steps onto the pitch
       incomingBatter.hasBatted = true;
       incomingBatter.isPaused = false;
 
@@ -1341,13 +1379,17 @@
       processBallAftermath();
     }
 
-    function openRetdModal() {
+    function openRetdModal(presetRole = null) {
       if (state.matchWinner) return;
       const inn = currentInning();
       const targetSelect = document.getElementById('retdTargetBatterSelect');
+      
+      let strikerSelected = (presetRole === 'nonStriker') ? '' : 'selected';
+      let nonStrikerSelected = (presetRole === 'nonStriker') ? 'selected' : '';
+
       targetSelect.innerHTML = `
-        <option value="${inn.strikerIndex}">${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} (Striker - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
-        ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}">${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker - Faced${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
+        <option value="${inn.strikerIndex}" ${strikerSelected}>${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} (Striker - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
+        ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}" ${nonStrikerSelected}>${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker - Faced${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
       `;
 
       const nextSelect = document.getElementById('retdNextBatterSelect');
@@ -1402,17 +1444,16 @@
     }
 
     // =========================================================================
-    // STRICT ELIGIBILITY FILTER:
+    // STRICT ELIGIBILITY FILTER (BENCH-AWARE):
     // 1. Players who haven't played 6 balls yet (stretchBalls < 6)
     // 2. Players who paused after 6-11 balls (6 <= stretchBalls < 12)
-    // 3. 12-ball veterans (stretchBalls >= 12) ONLY unlock when ALL other 
-    //    teammates have played >= 6 balls or are dismissed (isOut).
+    // 3. 12-ball veterans (stretchBalls >= 12 or exempt) ONLY unlock when ALL OTHER
+    //    BENCHMATES have faced >= 6 balls or are out (isOut).
     // =========================================================================
     function getEligibleBatters() {
       const inn = currentInning();
 
-      // Check if there is anyone on the entire team who hasn't completed at least 6 balls and isn't out
-      const hasUnfinishedTeammates = inn.batters.some((b, idx) => {
+      const hasUnfinishedBenchmates = inn.batters.some((b, idx) => {
         if (b.isOut) return false;
         if (idx === inn.strikerIndex || idx === inn.nonStrikerIndex) return false;
         return (b.stretchBalls < 6 && !b.isExemptFromLimit);
@@ -1424,17 +1465,16 @@
         if (b.isOut) return;
         if (idx === inn.strikerIndex || idx === inn.nonStrikerIndex) return;
 
-        // Condition A: Fresh or under-6 balls batter
+        // 1. Fresh or under-6 balls batter
         if (b.stretchBalls < 6 && !b.isExemptFromLimit) {
           eligible.push({ ...b, originalIndex: idx });
         }
-        // Condition B: Paused between 6 and 11 balls (can resume spell anytime)
+        // 2. Paused between 6 and 11 balls (can resume spell anytime)
         else if (b.isPaused && b.stretchBalls < 12 && !b.isExemptFromLimit) {
           eligible.push({ ...b, originalIndex: idx });
         }
-        // Condition C: 12-ball veterans (stretchBalls >= 12 or paused at 12)
-        // Can ONLY enter when all other bench members have finished their 6+ balls or are out!
-        else if ((b.stretchBalls >= 12 || b.isExemptFromLimit) && !hasUnfinishedTeammates) {
+        // 3. 12-ball veterans: Only when all other bench members have finished their 6+ balls or are out
+        else if ((b.stretchBalls >= 12 || b.isExemptFromLimit) && !hasUnfinishedBenchmates) {
           b.isExemptFromLimit = true;
           eligible.push({ ...b, originalIndex: idx });
         }
@@ -1845,7 +1885,7 @@
         });
       }
 
-      // Active Batters Rendering
+      // Striker Rendering
       const striker = inn.batters[inn.strikerIndex];
       const nonStriker = inn.batters[inn.nonStrikerIndex];
 
@@ -1858,14 +1898,26 @@
         document.getElementById('strikerFours').innerText = striker.fours;
         document.getElementById('strikerSixes').innerText = striker.sixes;
         document.getElementById('strikerSR').innerText = striker.balls > 0 ? ((striker.runs / striker.balls) * 100).toFixed(0) : '0.0';
+
+        // Display Captain's Option Banner once batter faces >= 6 balls and isn't exempt
+        const sPauseContainer = document.getElementById('strikerCaptainPauseContainer');
+        if (striker.stretchBalls >= 6 && striker.stretchBalls < 12 && !striker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
+          sPauseContainer.classList.remove('hidden');
+          document.getElementById('strikerCaptainBtnText').innerText = `📋 Captain's Call: Change Batsman (Faced ${striker.stretchBalls}/12 balls)`;
+        } else {
+          sPauseContainer.classList.add('hidden');
+        }
       }
 
+      // Non-Striker Rendering
       const nonStrikerRow = document.getElementById('nonStrikerRow');
+      const nsPauseContainer = document.getElementById('nonStrikerCaptainPauseContainer');
 
       if (inn.isLastManStanding || !nonStriker) {
         nonStrikerRow.classList.add('opacity-30');
         document.getElementById('nonStrikerNameDisplay').innerText = '(No Partner - LMS)';
         document.getElementById('lmsBadge').classList.remove('hidden');
+        nsPauseContainer.classList.add('hidden');
       } else {
         nonStrikerRow.classList.remove('opacity-30');
         document.getElementById('lmsBadge').classList.add('hidden');
@@ -1877,6 +1929,14 @@
         document.getElementById('nonStrikerFours').innerText = nonStriker.fours;
         document.getElementById('nonStrikerSixes').innerText = nonStriker.sixes;
         document.getElementById('nonStrikerSR').innerText = nonStriker.balls > 0 ? ((nonStriker.runs / nonStriker.balls) * 100).toFixed(0) : '0.0';
+
+        // Display Captain's Option Banner once batter faces >= 6 balls and isn't exempt
+        if (nonStriker.stretchBalls >= 6 && nonStriker.stretchBalls < 12 && !nonStriker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
+          nsPauseContainer.classList.remove('hidden');
+          document.getElementById('nonStrikerCaptainBtnText').innerText = `📋 Captain's Call: Change Batsman (Faced ${nonStriker.stretchBalls}/12 balls)`;
+        } else {
+          nsPauseContainer.classList.add('hidden');
+        }
       }
 
       // Bowler Rendering
