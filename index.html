@@ -28,13 +28,11 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <!-- Role Toggle Button (PIN Protected) -->
       <button id="modeToggleBtn" onclick="handleRoleToggle()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700">
         <i data-lucide="eye" id="roleIcon" class="w-3 h-3 text-slate-400"></i>
         <span id="roleLabel">Viewer</span>
       </button>
       
-      <!-- New Match Button (Requires Scorer Role) -->
       <button onclick="confirmNewMatch()" class="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white" title="New Match">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
       </button>
@@ -60,7 +58,7 @@
   <!-- MAIN CONTAINER -->
   <main class="max-w-md mx-auto p-3 space-y-3">
 
-    <!-- ================= TAB: MATCH / SCORING CONSOLE ================= -->
+    <!-- ================= TAB: MATCH ================= -->
     <div id="tabMatch" class="space-y-3">
 
       <!-- Viewer Banner -->
@@ -128,7 +126,7 @@
         </div>
       </div>
 
-      <!-- Active Batters Card (With 6-Ball Captain Alert Banners) -->
+      <!-- Active Batters Card -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md space-y-2">
         <div class="flex justify-between items-center text-xs text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800 pb-1.5">
           <span>Batter (Runs)</span>
@@ -154,7 +152,7 @@
               <span class="text-emerald-300" id="strikerSR">0.0</span>
             </div>
           </div>
-          <!-- 6-Ball Captain's Option Banner -->
+          <!-- 6-Ball Captain Option Alert -->
           <div id="strikerCaptainPauseContainer" class="hidden pt-1">
             <button onclick="captainVoluntaryPause('striker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
               <span class="text-xs">📋</span>
@@ -177,7 +175,7 @@
               <span class="text-slate-400" id="nonStrikerSR">0.0</span>
             </div>
           </div>
-          <!-- 6-Ball Captain's Option Banner -->
+          <!-- 6-Ball Captain Option Alert -->
           <div id="nonStrikerCaptainPauseContainer" class="hidden pt-1">
             <button onclick="captainVoluntaryPause('nonStriker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
               <span class="text-xs">📋</span>
@@ -193,31 +191,39 @@
           </div>
           
           <div class="flex items-center gap-2 ml-auto">
-            <button onclick="openChooseBatterModal()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1.5 border border-emerald-500/40 transition">
+            <button id="chooseBatterBtn" onclick="openChooseBatterModal()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1.5 border border-emerald-500/40 transition">
               <i data-lucide="user-plus" class="w-3.5 h-3.5 text-emerald-400"></i> Choose Batsman
             </button>
             
-            <button onclick="manualSwapStrike()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 border border-slate-700 transition">
+            <button id="swapEndsBtn" onclick="manualSwapStrike()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 border border-slate-700 transition">
               <i data-lucide="arrow-left-right" class="w-3.5 h-3.5 text-amber-400"></i> Swap Ends
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Current Bowler Card (1/6 to 6/6 Counter) -->
-      <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md flex justify-between items-center text-xs">
-        <div>
-          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Current Bowler</span>
-          <span class="text-sm font-semibold text-white" id="currentBowlerName">--</span>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold" id="bowlerOverBallsCounter">0/6 balls</span>
+      <!-- Current Bowler Card -->
+      <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 shadow-md space-y-2 text-xs">
+        <div class="flex justify-between items-center">
+          <div>
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Current Bowler</span>
+            <span class="text-sm font-semibold text-white" id="currentBowlerName">--</span>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold" id="bowlerOverBallsCounter">0/6 balls</span>
+            </div>
           </div>
-        </div>
-        <div class="flex items-center gap-3 font-mono">
-          <div><span class="text-slate-500">O:</span> <span id="bowlerOvers" class="font-bold text-white">0.0</span></div>
-          <div><span class="text-slate-500">R:</span> <span id="bowlerRuns" class="font-bold text-white">0</span></div>
-          <div><span class="text-slate-500">W:</span> <span id="bowlerWickets" class="font-bold text-emerald-400">0</span></div>
-          <div><span class="text-slate-500">Econ:</span> <span id="bowlerEcon" class="font-bold text-slate-300">0.0</span></div>
+          <div class="flex flex-col items-end gap-1.5">
+            <div class="flex items-center gap-3 font-mono">
+              <div><span class="text-slate-500">O:</span> <span id="bowlerOvers" class="font-bold text-white">0.0</span></div>
+              <div><span class="text-slate-500">R:</span> <span id="bowlerRuns" class="font-bold text-white">0</span></div>
+              <div><span class="text-slate-500">W:</span> <span id="bowlerWickets" class="font-bold text-emerald-400">0</span></div>
+              <div><span class="text-slate-500">Econ:</span> <span id="bowlerEcon" class="font-bold text-slate-300">0.0</span></div>
+            </div>
+            <!-- Bowler Change / Injury Modal Trigger -->
+            <button onclick="openMidOverBowlerModal()" class="scorer-control px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 font-bold text-[11px] flex items-center gap-1 shadow-sm">
+              <i data-lucide="activity" class="w-3 h-3 text-rose-400"></i> Bowler Injured / Change
+            </button>
+          </div>
         </div>
       </div>
 
@@ -498,7 +504,7 @@
       </div>
 
       <p class="text-[11px] text-slate-400 leading-normal">
-        Pick who walks in. Players who faced 12 balls cannot return until everyone on the bench has faced at least 6 balls or is out.
+        Pick who walks in. Players who have played 6+ balls cannot return until every other benchmate has completed at least 6 balls or is out.
       </p>
 
       <div class="space-y-2.5 text-xs">
@@ -516,6 +522,44 @@
       <div class="pt-2 flex gap-2">
         <button onclick="closeChooseBatterModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
         <button onclick="confirmChooseBatter()" class="w-1/2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">Confirm Change</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MID-OVER / BOWLER INJURY & CHANGE MODAL -->
+  <div id="midOverBowlerModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="font-bold text-white text-base flex items-center gap-1.5">
+          <span class="text-amber-400 font-black">Change Current Bowler</span>
+        </h3>
+        <button onclick="closeMidOverBowlerModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <p class="text-[11px] text-slate-300 leading-normal">
+        Select reason and incoming bowler. Remaining balls in the over will be credited to the replacement bowler.
+      </p>
+
+      <div class="space-y-2 text-xs">
+        <div>
+          <label class="text-slate-400 block mb-1">Reason for Bowler Change:</label>
+          <select id="midOverChangeReason" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold">
+            <option value="injured">⚠️ Bowler Retired Hurt (Cannot bowl again)</option>
+            <option value="correction">✏️ Accidental Selection / Tactical Change</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Select Incoming Bowler:</label>
+          <select id="midOverBowlerSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-300 font-semibold"></select>
+        </div>
+      </div>
+
+      <div class="pt-2 flex gap-2">
+        <button onclick="closeMidOverBowlerModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button onclick="confirmMidOverBowler()" class="w-1/2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
+          Confirm Bowler Change
+        </button>
       </div>
     </div>
   </div>
@@ -596,7 +640,7 @@
         <button onclick="closeRetdModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
 
-      <p class="text-[11px] text-amber-300/80">Batsman pauses now. <strong>Can be recalled by captain anytime</strong> to continue their ball count.</p>
+      <p class="text-[11px] text-amber-300/80">Batsman pauses now. <strong>Can return later</strong> to continue their ball count once others have played 6 balls.</p>
 
       <div class="space-y-2 text-xs">
         <div>
@@ -630,7 +674,7 @@
         <label class="text-slate-300 font-bold block">Select Next Incoming Batter:</label>
         <select id="forcedPauseNextBatterSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
         <p class="text-[10px] text-amber-300/80 leading-normal">
-          * Note: Player can return later once all other teammates on the bench have batted at least 6 balls or are out.
+          * Note: Player can return later once all other teammates on the bench have faced at least 6 balls or are out.
         </p>
       </div>
 
@@ -722,8 +766,8 @@
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v25_full_rules';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v25_full_rules';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v29_full_verified';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v29_full_verified';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -758,6 +802,7 @@
         strikerIndex: 0,
         nonStrikerIndex: 1,
         currentBowlerIndex: 0,
+        lastOverBowlerIndex: null,
         batters: [],
         bowlers: [],
         isLastManStanding: false,
@@ -789,12 +834,15 @@
         name: name,
         ballsBowled: 0,
         runsConceded: 0,
-        wickets: 0
+        wickets: 0,
+        maidens: 0,
+        isInjured: false
       }));
 
       inn.strikerIndex = sIdx;
       inn.nonStrikerIndex = nsIdx;
       inn.currentBowlerIndex = bIdx;
+      inn.lastOverBowlerIndex = null;
       inn.cycleBallCount = 0;
       inn.overLegalBalls = 0;
       inn.currentOverDeliveries = [];
@@ -828,7 +876,6 @@
       }
     }
 
-    // Role & PIN Verification
     function handleRoleToggle() {
       if (currentRole === 'scorer') {
         currentRole = 'viewer';
@@ -906,6 +953,7 @@
       }
 
       document.getElementById('bowlerModal').classList.add('hidden');
+      document.getElementById('midOverBowlerModal').classList.add('hidden');
       document.getElementById('forcedPauseModal').classList.add('hidden');
       document.getElementById('wicketModal').classList.add('hidden');
       document.getElementById('retdModal').classList.add('hidden');
@@ -932,7 +980,6 @@
       return isCaptain(playerName, teamName) ? `${playerName} (c)` : playerName;
     }
 
-    // Scoring Deliveries
     function recordDelivery(runs) {
       if (isActionLocked) return;
       isActionLocked = true;
@@ -1096,6 +1143,7 @@
 
       if (inn.overLegalBalls >= 6) {
         inn.overLegalBalls = 0;
+        inn.lastOverBowlerIndex = inn.currentBowlerIndex;
         if (!inn.isInningComplete) {
           if (!isPaused) {
             openMandatoryBowlerModal();
@@ -1120,7 +1168,7 @@
     function manualSwapStrike() {
       const inn = currentInning();
       if (inn.isLastManStanding) {
-        alert("Last Man Standing is active: solo batter has strike.");
+        alert("Last Man Standing is active: solo batter always retains strike.");
         return;
       }
       recordStateForUndo();
@@ -1129,7 +1177,11 @@
       renderAll();
     }
 
-    // 12-ball forced pause check
+    function checkSquadRotationComplete() {
+      const inn = currentInning();
+      return !inn.batters.some(b => !b.isOut && b.stretchBalls < 6 && !b.isExemptFromLimit);
+    }
+
     function checkStretchLimit(batterIdx) {
       const inn = currentInning();
       if (inn.isLastManStanding) return false;
@@ -1137,7 +1189,10 @@
       const batter = inn.batters[batterIdx];
       if (!batter) return false;
 
-      if (batter.isExemptFromLimit) return false;
+      if (batter.isExemptFromLimit || checkSquadRotationComplete()) {
+        batter.isExemptFromLimit = true;
+        return false;
+      }
 
       if (batter.stretchBalls >= 12) {
         batter.isPaused = true;
@@ -1179,6 +1234,10 @@
       const nextIdx = parseInt(select.value);
       const incomingBatter = inn.batters[nextIdx];
 
+      if (checkSquadRotationComplete() || incomingBatter.isExemptFromLimit) {
+        incomingBatter.isExemptFromLimit = true;
+      }
+
       incomingBatter.hasBatted = true;
       incomingBatter.isPaused = false;
 
@@ -1194,7 +1253,6 @@
       renderAll();
     }
 
-    // Captain Voluntary Change (Available once batter faces >= 6 balls)
     function captainVoluntaryPause(role) {
       const inn = currentInning();
       const targetIdx = (role === 'striker') ? inn.strikerIndex : inn.nonStrikerIndex;
@@ -1212,16 +1270,13 @@
 
       const available = getEligibleBatters();
       if (available.length === 0) {
-        alert("No other eligible batsman available on the bench to substitute under match rules.");
+        alert("No other eligible batsman available on the bench under current match rules.");
         return;
       }
 
       openRetdModal(role);
     }
 
-    // ========================================================
-    // CHOOSE BATSMAN MODAL LOGIC (TACTICAL INNINGS SELECTION)
-    // ========================================================
     function openChooseBatterModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1238,7 +1293,7 @@
       const eligible = getEligibleBatters();
 
       if (eligible.length === 0) {
-        alert("No other eligible batsman available on the bench under current match rules.");
+        alert("No eligible batsman available. Either everyone has played 6+ balls or remaining bench players haven't batted yet.");
         return;
       }
 
@@ -1277,6 +1332,10 @@
       incomingBatter.hasBatted = true;
       incomingBatter.isPaused = false;
 
+      if (checkSquadRotationComplete()) {
+        incomingBatter.isExemptFromLimit = true;
+      }
+
       if (position === 'striker') {
         inn.strikerIndex = incomingIdx;
       } else {
@@ -1288,9 +1347,6 @@
       renderAll();
     }
 
-    // ========================================================
-    // OUT & RETD MODALS
-    // ========================================================
     function openWicketModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1359,6 +1415,10 @@
         nextBatter.hasBatted = true;
         nextBatter.isPaused = false;
 
+        if (checkSquadRotationComplete()) {
+          nextBatter.isExemptFromLimit = true;
+        }
+
         if (outIndex === inn.strikerIndex) {
           inn.strikerIndex = nextIndex;
         } else {
@@ -1389,7 +1449,7 @@
 
       targetSelect.innerHTML = `
         <option value="${inn.strikerIndex}" ${strikerSelected}>${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} (Striker - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
-        ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}" ${nonStrikerSelected}>${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker - Faced${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
+        ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}" ${nonStrikerSelected}>${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker - Faced ${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
       `;
 
       const nextSelect = document.getElementById('retdNextBatterSelect');
@@ -1432,6 +1492,10 @@
       incomingBatter.hasBatted = true;
       incomingBatter.isPaused = false;
 
+      if (checkSquadRotationComplete()) {
+        incomingBatter.isExemptFromLimit = true;
+      }
+
       if (targetIndex === inn.strikerIndex) {
         inn.strikerIndex = nextIndex;
       } else {
@@ -1443,13 +1507,6 @@
       renderAll();
     }
 
-    // =========================================================================
-    // STRICT ELIGIBILITY FILTER (BENCH-AWARE):
-    // 1. Players who haven't played 6 balls yet (stretchBalls < 6)
-    // 2. Players who paused after 6-11 balls (6 <= stretchBalls < 12)
-    // 3. 12-ball veterans (stretchBalls >= 12 or exempt) ONLY unlock when ALL OTHER
-    //    BENCHMATES have faced >= 6 balls or are out (isOut).
-    // =========================================================================
     function getEligibleBatters() {
       const inn = currentInning();
 
@@ -1465,17 +1522,13 @@
         if (b.isOut) return;
         if (idx === inn.strikerIndex || idx === inn.nonStrikerIndex) return;
 
-        // 1. Fresh or under-6 balls batter
         if (b.stretchBalls < 6 && !b.isExemptFromLimit) {
           eligible.push({ ...b, originalIndex: idx });
         }
-        // 2. Paused between 6 and 11 balls (can resume spell anytime)
-        else if (b.isPaused && b.stretchBalls < 12 && !b.isExemptFromLimit) {
-          eligible.push({ ...b, originalIndex: idx });
-        }
-        // 3. 12-ball veterans: Only when all other bench members have finished their 6+ balls or are out
-        else if ((b.stretchBalls >= 12 || b.isExemptFromLimit) && !hasUnfinishedBenchmates) {
-          b.isExemptFromLimit = true;
+        else if (!hasUnfinishedBenchmates) {
+          if (b.stretchBalls >= 12 || checkSquadRotationComplete()) {
+            b.isExemptFromLimit = true;
+          }
           eligible.push({ ...b, originalIndex: idx });
         }
       });
@@ -1492,13 +1545,15 @@
       let firstValidOption = null;
 
       inn.bowlers.forEach((b, idx) => {
-        const isCurrent = (idx === inn.currentBowlerIndex);
+        if (b.isInjured) return;
+
+        const isPreviousOverBowler = (idx === inn.lastOverBowlerIndex);
         const opt = document.createElement('option');
         opt.value = idx;
         const bName = getFormattedPlayerName(b.name, inn.bowlingTeam);
-        opt.innerText = `${bName} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded} r, ${b.wickets} w)${isCurrent ? ' [Bowled Last Over]' : ''}`;
+        opt.innerText = `${bName} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded} r, ${b.wickets} w)${isPreviousOverBowler ? ' [Bowled Last Over]' : ''}`;
         
-        if (!isCurrent) {
+        if (!isPreviousOverBowler) {
           opt.selected = true;
           if (firstValidOption === null) firstValidOption = idx;
         }
@@ -1518,13 +1573,75 @@
       if (select.value === "") return;
 
       const selectedIdx = parseInt(select.value);
-      if (selectedIdx === inn.currentBowlerIndex && inn.bowlers.length > 1) {
+      if (selectedIdx === inn.lastOverBowlerIndex && inn.bowlers.filter(b => !b.isInjured).length > 1) {
         alert("The same bowler cannot bowl two consecutive overs. Please select another bowler.");
         return;
       }
 
       inn.currentBowlerIndex = selectedIdx;
       document.getElementById('bowlerModal').classList.add('hidden');
+      saveState();
+      renderAll();
+    }
+
+    function openMidOverBowlerModal() {
+      if (state.matchWinner) return;
+      const inn = currentInning();
+      const select = document.getElementById('midOverBowlerSelect');
+      select.innerHTML = '';
+
+      inn.bowlers.forEach((b, idx) => {
+        if (b.isInjured && idx !== inn.currentBowlerIndex) return;
+
+        const isCurrent = (idx === inn.currentBowlerIndex);
+        const isPrevious = (idx === inn.lastOverBowlerIndex);
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const bName = getFormattedPlayerName(b.name, inn.bowlingTeam);
+        let tag = '';
+        if (isCurrent) tag = ' [Currently Bowling]';
+        else if (isPrevious) tag = ' [Bowled Previous Over]';
+
+        opt.innerText = `${bName} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded}r, ${b.wickets}w)${tag}`;
+        if (!isCurrent && !isPrevious) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('midOverBowlerModal').classList.remove('hidden');
+    }
+
+    function closeMidOverBowlerModal() {
+      document.getElementById('midOverBowlerModal').classList.add('hidden');
+    }
+
+    function confirmMidOverBowler() {
+      const inn = currentInning();
+      const select = document.getElementById('midOverBowlerSelect');
+      if (select.value === "") return;
+
+      const selectedIdx = parseInt(select.value);
+      if (selectedIdx === inn.currentBowlerIndex) {
+        closeMidOverBowlerModal();
+        return;
+      }
+
+      const activeUninjured = inn.bowlers.filter(b => !b.isInjured).length;
+      if (selectedIdx === inn.lastOverBowlerIndex && activeUninjured > 2) {
+        alert("Cannot switch to the bowler who bowled the previous full over. Please select another bowler.");
+        return;
+      }
+
+      recordStateForUndo();
+
+      const reason = document.getElementById('midOverChangeReason').value;
+      const outgoingBowler = inn.bowlers[inn.currentBowlerIndex];
+
+      if (reason === 'injured') {
+        outgoingBowler.isInjured = true;
+      }
+
+      inn.currentBowlerIndex = selectedIdx;
+      closeMidOverBowlerModal();
       saveState();
       renderAll();
     }
@@ -1899,7 +2016,6 @@
         document.getElementById('strikerSixes').innerText = striker.sixes;
         document.getElementById('strikerSR').innerText = striker.balls > 0 ? ((striker.runs / striker.balls) * 100).toFixed(0) : '0.0';
 
-        // Display Captain's Option Banner once batter faces >= 6 balls and isn't exempt
         const sPauseContainer = document.getElementById('strikerCaptainPauseContainer');
         if (striker.stretchBalls >= 6 && striker.stretchBalls < 12 && !striker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
           sPauseContainer.classList.remove('hidden');
@@ -1912,15 +2028,27 @@
       // Non-Striker Rendering
       const nonStrikerRow = document.getElementById('nonStrikerRow');
       const nsPauseContainer = document.getElementById('nonStrikerCaptainPauseContainer');
+      const chooseBtn = document.getElementById('chooseBatterBtn');
+      const swapBtn = document.getElementById('swapEndsBtn');
 
       if (inn.isLastManStanding || !nonStriker) {
         nonStrikerRow.classList.add('opacity-30');
         document.getElementById('nonStrikerNameDisplay').innerText = '(No Partner - LMS)';
+        document.getElementById('nonStrikerStretch').innerText = '--';
+        document.getElementById('nonStrikerRuns').innerText = '0';
+        document.getElementById('nonStrikerBalls').innerText = '0';
+        document.getElementById('nonStrikerFours').innerText = '0';
+        document.getElementById('nonStrikerSixes').innerText = '0';
+        document.getElementById('nonStrikerSR').innerText = '0.0';
         document.getElementById('lmsBadge').classList.remove('hidden');
         nsPauseContainer.classList.add('hidden');
+        if (chooseBtn) chooseBtn.classList.add('hidden');
+        if (swapBtn) swapBtn.classList.add('hidden');
       } else {
         nonStrikerRow.classList.remove('opacity-30');
         document.getElementById('lmsBadge').classList.add('hidden');
+        if (chooseBtn && currentRole === 'scorer') chooseBtn.classList.remove('hidden');
+        if (swapBtn && currentRole === 'scorer') swapBtn.classList.remove('hidden');
         const nsName = getFormattedPlayerName(nonStriker.name, inn.battingTeam);
         document.getElementById('nonStrikerNameDisplay').innerText = `${nsName} - ${nonStriker.runs} (${nonStriker.balls}b)`;
         document.getElementById('nonStrikerStretch').innerText = nonStriker.isExemptFromLimit ? '∞' : `${nonStriker.stretchBalls}/12`;
@@ -1930,7 +2058,6 @@
         document.getElementById('nonStrikerSixes').innerText = nonStriker.sixes;
         document.getElementById('nonStrikerSR').innerText = nonStriker.balls > 0 ? ((nonStriker.runs / nonStriker.balls) * 100).toFixed(0) : '0.0';
 
-        // Display Captain's Option Banner once batter faces >= 6 balls and isn't exempt
         if (nonStriker.stretchBalls >= 6 && nonStriker.stretchBalls < 12 && !nonStriker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
           nsPauseContainer.classList.remove('hidden');
           document.getElementById('nonStrikerCaptainBtnText').innerText = `📋 Captain's Call: Change Batsman (Faced ${nonStriker.stretchBalls}/12 balls)`;
@@ -1984,15 +2111,18 @@
       }).join('');
 
       const t1BowlBody = document.getElementById('t1BowlingTableBody');
-      t1BowlBody.innerHTML = inn1.bowlers.map(b => `
-        <tr class="py-1">
-          <td class="py-1 font-medium text-slate-200">${getFormattedPlayerName(b.name, inn1.bowlingTeam)}</td>
-          <td class="text-right font-mono text-slate-300">${formatOvers(b.ballsBowled)}</td>
-          <td class="text-right font-mono text-slate-300">${b.runsConceded}</td>
-          <td class="text-right font-bold font-mono text-emerald-400">${b.wickets}</td>
-          <td class="text-right font-mono text-slate-400">${b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0'}</td>
-        </tr>
-      `).join('');
+      t1BowlBody.innerHTML = inn1.bowlers.map(b => {
+        let note = b.isInjured ? ' <span class="text-[10px] text-rose-400 font-normal">(Injured / Retd)</span>' : '';
+        return `
+          <tr class="py-1">
+            <td class="py-1 font-medium text-slate-200">${getFormattedPlayerName(b.name, inn1.bowlingTeam)}${note}</td>
+            <td class="text-right font-mono text-slate-300">${formatOvers(b.ballsBowled)}</td>
+            <td class="text-right font-mono text-slate-300">${b.runsConceded}</td>
+            <td class="text-right font-bold font-mono text-emerald-400">${b.wickets}</td>
+            <td class="text-right font-mono text-slate-400">${b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0'}</td>
+          </tr>
+        `;
+      }).join('');
 
       if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner) {
         document.getElementById('t2InningsContainer').classList.remove('hidden');
@@ -2021,15 +2151,18 @@
         }).join('');
 
         const t2BowlBody = document.getElementById('t2BowlingTableBody');
-        t2BowlBody.innerHTML = inn2.bowlers.map(b => `
-          <tr class="py-1">
-            <td class="py-1 font-medium text-slate-200">${getFormattedPlayerName(b.name, inn2.bowlingTeam)}</td>
-            <td class="text-right font-mono text-slate-300">${formatOvers(b.ballsBowled)}</td>
-            <td class="text-right font-mono text-slate-300">${b.runsConceded}</td>
-            <td class="text-right font-bold font-mono text-emerald-400">${b.wickets}</td>
-            <td class="text-right font-mono text-slate-400">${b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0'}</td>
-          </tr>
-        `).join('');
+        t2BowlBody.innerHTML = inn2.bowlers.map(b => {
+          let note = b.isInjured ? ' <span class="text-[10px] text-rose-400 font-normal">(Injured / Retd)</span>' : '';
+          return `
+            <tr class="py-1">
+              <td class="py-1 font-medium text-slate-200">${getFormattedPlayerName(b.name, inn2.bowlingTeam)}${note}</td>
+              <td class="text-right font-mono text-slate-300">${formatOvers(b.ballsBowled)}</td>
+              <td class="text-right font-mono text-slate-300">${b.runsConceded}</td>
+              <td class="text-right font-bold font-mono text-emerald-400">${b.wickets}</td>
+              <td class="text-right font-mono text-slate-400">${b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0'}</td>
+            </tr>
+          `;
+        }).join('');
       }
     }
 
@@ -2050,70 +2183,95 @@
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
-    // Comprehensive WhatsApp Summary Report
+    // ========================================================
+    // COMPLETE, UNCOMPROMISED WHATSAPP SCORECARD EXPORT
+    // ========================================================
     function copyMatchSummary() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
 
-      let text = `🏆 *WEEKEND CAGE CRICKET - MATCH REPORT* 🏆\n`;
-      text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      let text = `🏏 *WEEKEND CAGE CRICKET - OFFICIAL MATCH REPORT* 🏏\n`;
+      text += `📅 Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}\n`;
+      text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       if (state.matchResultText) {
-        text += `✨ *RESULT: ${state.matchResultText.toUpperCase()}* ✨\n`;
+        text += `🏆 *RESULT: ${state.matchResultText.toUpperCase()}* 🏆\n`;
       } else {
-        text += `⏳ *MATCH IN PROGRESS*\n`;
+        text += `⏳ *MATCH IN PROGRESS (${state.currentInning === 1 ? '1st' : '2nd'} Innings)*\n`;
       }
-      text += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      // 1st Innings
-      text += `🏏 *1ST INNINGS: ${inn1.battingTeam.toUpperCase()}*\n`;
-      text += `Score: *${inn1.totalRuns}/${inn1.wickets}* (${formatOvers(inn1.legalBalls)} ov)\n`;
-      text += `Extras: ${inn1.extras.wides} WD, ${inn1.extras.noballs} NB\n\n`;
+      function generateInningScorecardText(inn, innNumber) {
+        let block = `📋 *${innNumber === 1 ? '1ST' : '2ND'} INNINGS: ${inn.battingTeam.toUpperCase()}*\n`;
+        block += `Total: *${inn.totalRuns}/${inn.wickets}* in *${formatOvers(inn.legalBalls)}* Overs (CRR: ${calcRunRate(inn.totalRuns, inn.legalBalls)})\n`;
+        block += `Extras: *${inn.extras.wides + inn.extras.noballs}* (WD: ${inn.extras.wides}, NB: ${inn.extras.noballs})\n\n`;
 
-      text += `*Batting Figures:*\n`;
-      inn1.batters.forEach(b => {
-        const bName = getFormattedPlayerName(b.name, inn1.battingTeam);
-        let status = b.isOut ? b.dismissalText : (b.isPaused ? `retd (${b.stretchBalls}b)` : 'not out');
-        if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
-        text += `• ${bName}: ${b.runs} (${b.balls}b, ${b.fours}x4, ${b.sixes}x6) - _${status}_\n`;
-      });
+        block += `*BATTING SCORECARD:*\n`;
+        block += `-------------------------------------------\n`;
+        block += `Batter                    R (B)  4s 6s   SR\n`;
+        block += `-------------------------------------------\n`;
 
-      text += `\n*Bowling Figures:*\n`;
-      inn1.bowlers.filter(b => b.ballsBowled > 0).forEach(b => {
-        const bName = getFormattedPlayerName(b.name, inn1.bowlingTeam);
-        const econ = (b.runsConceded / b.ballsBowled * 6).toFixed(1);
-        text += `• ${bName}: ${formatOvers(b.ballsBowled)} ov, ${b.runsConceded}r, ${b.wickets}w (Econ: ${econ})\n`;
-      });
+        const dnbList = [];
 
-      text += `\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        inn.batters.forEach(b => {
+          if (!b.hasBatted && b.balls === 0 && !b.isOut && !b.isPaused) {
+            dnbList.push(getFormattedPlayerName(b.name, inn.battingTeam));
+            return;
+          }
 
-      // 2nd Innings
+          let name = getFormattedPlayerName(b.name, inn.battingTeam);
+          let r = b.runs.toString().padStart(3, ' ');
+          let balls = b.balls.toString().padStart(3, ' ');
+          let fours = b.fours.toString().padStart(2, ' ');
+          let sixes = b.sixes.toString().padStart(2, ' ');
+          let sr = (b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(0) : '0').padStart(4, ' ');
+
+          let status = 'not out';
+          if (b.isOut) status = b.dismissalText;
+          else if (b.isPaused) status = `retd (${b.stretchBalls}b)`;
+          else if (b.isExemptFromLimit) status = 'not out (∞)';
+
+          block += `• ${name}\n  └ ${status} | ${r} (${balls}) | 4s:${fours} 6s:${sixes} | SR: ${sr}\n`;
+        });
+
+        if (dnbList.length > 0) {
+          block += `\n*Yet to Bat (DNB):* ${dnbList.join(', ')}\n`;
+        }
+
+        block += `\n*BOWLING FIGURES:*\n`;
+        block += `-------------------------------------------\n`;
+        block += `Bowler           O    R    W    Econ\n`;
+        block += `-------------------------------------------\n`;
+
+        const activeBowlers = inn.bowlers.filter(b => b.ballsBowled > 0);
+        if (activeBowlers.length === 0) {
+          block += `No overs bowled yet.\n`;
+        } else {
+          activeBowlers.forEach(b => {
+            let name = getFormattedPlayerName(b.name, inn.bowlingTeam);
+            let ov = formatOvers(b.ballsBowled).padStart(4, ' ');
+            let r = b.runsConceded.toString().padStart(4, ' ');
+            let w = b.wickets.toString().padStart(2, ' ');
+            let econ = (b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0').padStart(5, ' ');
+            let inj = b.isInjured ? ' [Injured/Retd]' : '';
+
+            block += `• ${name}${inj}\n  └ ${ov} ov, ${r} r, ${w} w, Econ: ${econ}\n`;
+          });
+        }
+
+        block += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        return block;
+      }
+
+      text += generateInningScorecardText(inn1, 1);
+
       if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner) {
-        text += `🏏 *2ND INNINGS: ${inn2.battingTeam.toUpperCase()}*\n`;
-        text += `Score: *${inn2.totalRuns}/${inn2.wickets}* (${formatOvers(inn2.legalBalls)} ov)\n`;
-        text += `Extras: ${inn2.extras.wides} WD, ${inn2.extras.noballs} NB\n\n`;
-
-        text += `*Batting Figures:*\n`;
-        inn2.batters.forEach(b => {
-          const bName = getFormattedPlayerName(b.name, inn2.battingTeam);
-          let status = b.isOut ? b.dismissalText : (b.isPaused ? `retd (${b.stretchBalls}b)` : 'not out');
-          if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
-          text += `• ${bName}: ${b.runs} (${b.balls}b, ${b.fours}x4, ${b.sixes}x6) - _${status}_\n`;
-        });
-
-        text += `\n*Bowling Figures:*\n`;
-        inn2.bowlers.filter(b => b.ballsBowled > 0).forEach(b => {
-          const bName = getFormattedPlayerName(b.name, inn2.bowlingTeam);
-          const econ = (b.runsConceded / b.ballsBowled * 6).toFixed(1);
-          text += `• ${bName}: ${formatOvers(b.ballsBowled)} ov, ${b.runsConceded}r, ${b.wickets}w (Econ: ${econ})\n`;
-        });
-
-        text += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+        text += generateInningScorecardText(inn2, 2);
       }
 
-      text += `_Scored live on HS Cage Cricket Scorer_`;
+      text += `_Scored pitch-side on HS Cage Cricket Web Scorer_`;
 
       navigator.clipboard.writeText(text).then(() => {
-        alert("Full match report copied to clipboard! Paste directly into WhatsApp.");
+        alert("Complete official match scorecard copied to clipboard! Paste directly into WhatsApp.");
       }).catch(err => {
         console.error("Clipboard copy failed", err);
       });
