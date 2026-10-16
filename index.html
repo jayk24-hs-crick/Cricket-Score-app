@@ -30,7 +30,9 @@
     <div class="flex items-center gap-2">
       <!-- Role Toggle Button (PIN Protected) -->
       <button id="modeToggleBtn" onclick="handleRoleToggle()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700">
-        <i data-lucide="eye" id="roleIcon" class="w-3 h-3 text-slate-400"></i>
+        <span id="roleIconContainer" class="flex items-center">
+          <i data-lucide="eye" class="w-3 h-3 text-slate-400"></i>
+        </span>
         <span id="roleLabel">Viewer</span>
       </button>
       
@@ -432,7 +434,7 @@
           </div>
           <div>
             <label class="text-xs text-amber-400 font-bold block mb-1">Scorer PIN (4 Digits)</label>
-            <input type="password" id="setupScorerPin" maxlength="4" value="1234" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono font-bold tracking-widest text-center">
+            <input type="password" id="setupScorerPin" inputmode="numeric" pattern="[0-9]*" maxlength="4" value="1234" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono font-bold tracking-widest text-center">
           </div>
         </div>
       </div>
@@ -578,7 +580,7 @@
       </div>
 
       <div>
-        <input type="password" id="pinInputEntry" maxlength="4" placeholder="••••" class="w-36 mx-auto bg-slate-800 border-2 border-slate-700 focus:border-emerald-500 rounded-xl p-2.5 text-center text-xl tracking-widest text-emerald-300 font-mono font-bold focus:outline-none">
+        <input type="password" id="pinInputEntry" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" onkeydown="if(event.key==='Enter')verifyScorerPin()" class="w-36 mx-auto bg-slate-800 border-2 border-slate-700 focus:border-emerald-500 rounded-xl p-2.5 text-center text-xl tracking-widest text-emerald-300 font-mono font-bold focus:outline-none">
         <p id="pinErrorMsg" class="text-rose-400 text-xs font-semibold mt-1.5 hidden">Incorrect PIN. Try again.</p>
       </div>
 
@@ -768,8 +770,8 @@
 
   <!-- APP SCRIPT & ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v30_final_audit';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v30_final_audit';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v30_pin_fixed';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v30_pin_fixed';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -878,6 +880,7 @@
       }
     }
 
+    // Role & PIN Verification
     function handleRoleToggle() {
       if (currentRole === 'scorer') {
         currentRole = 'viewer';
@@ -901,9 +904,9 @@
 
     function verifyScorerPin() {
       const input = document.getElementById('pinInputEntry').value.trim();
-      const expected = state.scorerPin || '1234';
+      const expected = String(state.scorerPin || '1234').trim();
 
-      if (input === expected) {
+      if (String(input) === expected) {
         currentRole = 'scorer';
         closePinModal();
         applyRoleUI();
@@ -911,26 +914,31 @@
       } else {
         document.getElementById('pinErrorMsg').classList.remove('hidden');
         document.getElementById('pinInputEntry').value = '';
+        document.getElementById('pinInputEntry').focus();
       }
     }
 
     function applyRoleUI() {
       const btn = document.getElementById('modeToggleBtn');
       const label = document.getElementById('roleLabel');
-      const icon = document.getElementById('roleIcon');
+      const iconContainer = document.getElementById('roleIconContainer');
       const controls = document.querySelectorAll('.scorer-control');
       const banner = document.getElementById('viewerBanner');
 
       if (currentRole === 'scorer') {
         label.innerText = 'Scorer (Lock)';
         btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-emerald-950/80 text-emerald-300 border-emerald-500/50";
-        icon.setAttribute('data-lucide', 'unlock');
+        if (iconContainer) {
+          iconContainer.innerHTML = '<i data-lucide="unlock" class="w-3 h-3 text-emerald-300"></i>';
+        }
         banner.classList.add('hidden');
         controls.forEach(el => el.classList.remove('hidden'));
       } else {
         label.innerText = 'Viewer (Locked)';
         btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700";
-        icon.setAttribute('data-lucide', 'eye');
+        if (iconContainer) {
+          iconContainer.innerHTML = '<i data-lucide="eye" class="w-3 h-3 text-slate-400"></i>';
+        }
         banner.classList.remove('hidden');
         controls.forEach(el => el.classList.add('hidden'));
       }
@@ -1134,7 +1142,6 @@
         return;
       }
 
-      // 3-ball strike rotation (ONLY when LMS is NOT active)
       if (inn.cycleBallCount >= 3) {
         inn.cycleBallCount = 0;
         if (!inn.isLastManStanding) {
@@ -1142,10 +1149,8 @@
         }
       }
 
-      // 12-ball forced pause check
       const isPaused = checkStretchLimit(inn.strikerIndex);
 
-      // Over completion check (6 legal balls)
       if (inn.overLegalBalls >= 6) {
         inn.overLegalBalls = 0;
         inn.lastOverBowlerIndex = inn.currentBowlerIndex;
@@ -1289,7 +1294,7 @@
       const posSelect = document.getElementById('chooseBatterPositionSelect');
       posSelect.innerHTML = `
         <option value="striker">Striker (${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
-        ${!inn.isLastManStanding ? `<option value="nonStriker">Non-Striker (${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} - Faced${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
+        ${!inn.isLastManStanding ? `<option value="nonStriker">Non-Striker (${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} - Faced ${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
       `;
 
       const incomingSelect = document.getElementById('chooseBatterIncomingSelect');
@@ -1399,4 +1404,896 @@
       const batterOut = inn.batters[outIndex];
 
       if (inn.overLegalBalls === 0 && inn.legalBalls > 0 && inn.currentOverDeliveries.length >= 6) {
-        inn
+        inn.currentOverDeliveries = [];
+      }
+
+      batterOut.isOut = true;
+      batterOut.isPaused = false;
+      batterOut.balls += 1;
+      batterOut.dismissalText = manner;
+      inn.wickets += 1;
+      bowler.ballsBowled += 1;
+      if (manner !== 'Run Out') bowler.wickets += 1;
+
+      inn.legalBalls += 1;
+      inn.overLegalBalls += 1;
+      inn.cycleBallCount += 1;
+      inn.currentOverDeliveries.push({ type: 'wicket', text: 'W', val: 0 });
+
+      if (nextIndex !== -1) {
+        const nextBatter = inn.batters[nextIndex];
+        nextBatter.hasBatted = true;
+        nextBatter.isPaused = false;
+
+        if (checkSquadRotationComplete()) {
+          nextBatter.isExemptFromLimit = true;
+        }
+
+        if (outIndex === inn.strikerIndex) {
+          inn.strikerIndex = nextIndex;
+        } else {
+          inn.nonStrikerIndex = nextIndex;
+        }
+      } else {
+        const activeNotOut = inn.batters.filter(b => !b.isOut);
+        if (activeNotOut.length === 1) {
+          inn.isLastManStanding = true;
+          inn.strikerIndex = inn.batters.indexOf(activeNotOut[0]);
+          activeNotOut[0].isExemptFromLimit = true;
+        } else {
+          inn.isInningComplete = true;
+        }
+      }
+
+      closeWicketModal();
+      processBallAftermath();
+    }
+
+    function openRetdModal(presetRole = null) {
+      if (state.matchWinner) return;
+      const inn = currentInning();
+      const targetSelect = document.getElementById('retdTargetBatterSelect');
+      
+      let strikerSelected = (presetRole === 'nonStriker') ? '' : 'selected';
+      let nonStrikerSelected = (presetRole === 'nonStriker') ? 'selected' : '';
+
+      targetSelect.innerHTML = `
+        <option value="${inn.strikerIndex}" ${strikerSelected}>${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} (Striker - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
+        ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}" ${nonStrikerSelected}>${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker - Faced ${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
+      `;
+
+      const nextSelect = document.getElementById('retdNextBatterSelect');
+      nextSelect.innerHTML = '';
+      const available = getEligibleBatters();
+
+      if (available.length === 0) {
+        alert("No other eligible batsman available on the bench to substitute.");
+        return;
+      }
+
+      available.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.originalIndex;
+        const tag = b.isExemptFromLimit ? ' (∞ Unlimited)' : (b.isPaused ? ` (Resumes at ${b.stretchBalls}/12b)` : ' (Fresh - <6b)');
+        opt.innerText = `${getFormattedPlayerName(b.name, inn.battingTeam)}${tag}`;
+        nextSelect.appendChild(opt);
+      });
+
+      document.getElementById('retdModal').classList.remove('hidden');
+    }
+
+    function closeRetdModal() {
+      document.getElementById('retdModal').classList.add('hidden');
+    }
+
+    function confirmRetd() {
+      const inn = currentInning();
+      recordStateForUndo();
+
+      const targetIndex = parseInt(document.getElementById('retdTargetBatterSelect').value);
+      const nextIndex = parseInt(document.getElementById('retdNextBatterSelect').value);
+
+      const retiringBatter = inn.batters[targetIndex];
+      const incomingBatter = inn.batters[nextIndex];
+
+      retiringBatter.isPaused = true;
+      retiringBatter.dismissalText = `retd (${retiringBatter.stretchBalls}b)`;
+
+      incomingBatter.hasBatted = true;
+      incomingBatter.isPaused = false;
+
+      if (checkSquadRotationComplete()) {
+        incomingBatter.isExemptFromLimit = true;
+      }
+
+      if (targetIndex === inn.strikerIndex) {
+        inn.strikerIndex = nextIndex;
+      } else {
+        inn.nonStrikerIndex = nextIndex;
+      }
+
+      closeRetdModal();
+      saveState();
+      renderAll();
+    }
+
+    function getEligibleBatters() {
+      const inn = currentInning();
+
+      const hasUnfinishedBenchmates = inn.batters.some((b, idx) => {
+        if (b.isOut) return false;
+        if (idx === inn.strikerIndex || idx === inn.nonStrikerIndex) return false;
+        return (b.stretchBalls < 6 && !b.isExemptFromLimit);
+      });
+
+      const eligible = [];
+
+      inn.batters.forEach((b, idx) => {
+        if (b.isOut) return;
+        if (idx === inn.strikerIndex || idx === inn.nonStrikerIndex) return;
+
+        if (b.stretchBalls < 6 && !b.isExemptFromLimit) {
+          eligible.push({ ...b, originalIndex: idx });
+        }
+        else if (!hasUnfinishedBenchmates) {
+          if (b.stretchBalls >= 12 || checkSquadRotationComplete()) {
+            b.isExemptFromLimit = true;
+          }
+          eligible.push({ ...b, originalIndex: idx });
+        }
+      });
+
+      return eligible;
+    }
+
+    function openMandatoryBowlerModal() {
+      if (state.matchWinner) return;
+      const inn = currentInning();
+      const select = document.getElementById('newBowlerSelect');
+      select.innerHTML = '';
+
+      let firstValidOption = null;
+
+      inn.bowlers.forEach((b, idx) => {
+        if (b.isInjured) return;
+
+        const isPreviousOverBowler = (idx === inn.lastOverBowlerIndex);
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const bName = getFormattedPlayerName(b.name, inn.bowlingTeam);
+        opt.innerText = `${bName} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded} r, ${b.wickets} w)${isPreviousOverBowler ? ' [Bowled Last Over]' : ''}`;
+        
+        if (!isPreviousOverBowler) {
+          opt.selected = true;
+          if (firstValidOption === null) firstValidOption = idx;
+        }
+        select.appendChild(opt);
+      });
+
+      if (firstValidOption !== null) {
+        select.value = firstValidOption.toString();
+      }
+
+      document.getElementById('bowlerModal').classList.remove('hidden');
+    }
+
+    function confirmNewBowler() {
+      const inn = currentInning();
+      const select = document.getElementById('newBowlerSelect');
+      if (select.value === "") return;
+
+      const selectedIdx = parseInt(select.value);
+      if (selectedIdx === inn.lastOverBowlerIndex && inn.bowlers.filter(b => !b.isInjured).length > 1) {
+        alert("The same bowler cannot bowl two consecutive overs. Please select another bowler.");
+        return;
+      }
+
+      inn.currentBowlerIndex = selectedIdx;
+      document.getElementById('bowlerModal').classList.add('hidden');
+      saveState();
+      renderAll();
+    }
+
+    function openMidOverBowlerModal() {
+      if (state.matchWinner) return;
+      const inn = currentInning();
+      const select = document.getElementById('midOverBowlerSelect');
+      select.innerHTML = '';
+
+      inn.bowlers.forEach((b, idx) => {
+        if (b.isInjured && idx !== inn.currentBowlerIndex) return;
+
+        const isCurrent = (idx === inn.currentBowlerIndex);
+        const isPrevious = (idx === inn.lastOverBowlerIndex);
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const bName = getFormattedPlayerName(b.name, inn.bowlingTeam);
+        let tag = '';
+        if (isCurrent) tag = ' [Currently Bowling]';
+        else if (isPrevious) tag = ' [Bowled Previous Over]';
+
+        opt.innerText = `${bName} (${formatOvers(b.ballsBowled)} ov, ${b.runsConceded}r, ${b.wickets}w)${tag}`;
+        if (!isCurrent && !isPrevious) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('midOverBowlerModal').classList.remove('hidden');
+    }
+
+    function closeMidOverBowlerModal() {
+      document.getElementById('midOverBowlerModal').classList.add('hidden');
+    }
+
+    function confirmMidOverBowler() {
+      const inn = currentInning();
+      const select = document.getElementById('midOverBowlerSelect');
+      if (select.value === "") return;
+
+      const selectedIdx = parseInt(select.value);
+      if (selectedIdx === inn.currentBowlerIndex) {
+        closeMidOverBowlerModal();
+        return;
+      }
+
+      const activeUninjured = inn.bowlers.filter(b => !b.isInjured).length;
+      if (selectedIdx === inn.lastOverBowlerIndex && activeUninjured > 2) {
+        alert("Cannot switch to the bowler who bowled the previous full over. Please select another bowler.");
+        return;
+      }
+
+      recordStateForUndo();
+
+      const reason = document.getElementById('midOverChangeReason').value;
+      const outgoingBowler = inn.bowlers[inn.currentBowlerIndex];
+
+      if (reason === 'injured') {
+        outgoingBowler.isInjured = true;
+      }
+
+      inn.currentBowlerIndex = selectedIdx;
+      closeMidOverBowlerModal();
+      saveState();
+      renderAll();
+    }
+
+    function checkMatchProgress() {
+      const inn1 = state.innings[0];
+      const inn2 = state.innings[1];
+      const maxBalls = state.maxOvers * 6;
+
+      if (state.currentInning === 1) {
+        const allOut1 = (inn1.wickets >= state.team1.roster.length - 1 && inn1.isLastManStanding && inn1.isInningComplete);
+        if (inn1.legalBalls >= maxBalls || inn1.isInningComplete || allOut1) {
+          inn1.isInningComplete = true;
+          openSecondInningsLineupModal();
+        }
+      }
+
+      if (state.currentInning === 2) {
+        const target = inn1.totalRuns + 1;
+        const allOut2 = (inn2.wickets >= state.team2.roster.length - 1 && inn2.isLastManStanding && inn2.isInningComplete);
+
+        if (inn2.totalRuns >= target) {
+          inn2.isInningComplete = true;
+          state.matchWinner = inn2.battingTeam;
+          const wicketsLeft = state.team2.roster.length - inn2.wickets;
+          state.matchResultText = `${inn2.battingTeam} won by ${wicketsLeft} wicket${wicketsLeft > 1 ? 's' : ''}`;
+        } else if (inn2.legalBalls >= maxBalls || inn2.isInningComplete || allOut2) {
+          inn2.isInningComplete = true;
+          if (inn1.totalRuns > inn2.totalRuns) {
+            state.matchWinner = inn1.battingTeam;
+            const runDiff = inn1.totalRuns - inn2.totalRuns;
+            state.matchResultText = `${inn1.battingTeam} won by ${runDiff} run${runDiff > 1 ? 's' : ''}`;
+          } else if (inn1.totalRuns === inn2.totalRuns) {
+            state.matchWinner = 'Tied';
+            state.matchResultText = "Match Tied";
+          }
+        }
+      }
+    }
+
+    function openSecondInningsLineupModal() {
+      if (state.currentInning === 2 || state.matchWinner) return;
+
+      const sub = document.getElementById('inningsTransitionSub');
+      sub.innerText = `${state.team1.name} scored ${state.innings[0].totalRuns}/${state.innings[0].wickets}. Target for ${state.team2.name} is ${state.innings[0].totalRuns + 1}. Select opening lineup:`;
+
+      const t2Striker = document.getElementById('t2OpeningStrikerSelect');
+      const t2NonStriker = document.getElementById('t2OpeningNonStrikerSelect');
+      const t1Bowler = document.getElementById('t1OpeningBowlerSelect');
+
+      t2Striker.innerHTML = state.team2.roster.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${getFormattedPlayerName(name, state.team2.name)}</option>`).join('');
+      t2NonStriker.innerHTML = state.team2.roster.map((name, i) => `<option value="${i}" ${i === 1 ? 'selected' : ''}>${getFormattedPlayerName(name, state.team2.name)}</option>`).join('');
+      t1Bowler.innerHTML = state.team1.roster.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${getFormattedPlayerName(name, state.team1.name)}</option>`).join('');
+
+      document.getElementById('inningsTransitionModal').classList.remove('hidden');
+    }
+
+    function confirmSecondInningsLineup() {
+      const sIdx = parseInt(document.getElementById('t2OpeningStrikerSelect').value);
+      const nsIdx = parseInt(document.getElementById('t2OpeningNonStrikerSelect').value);
+      const bIdx = parseInt(document.getElementById('t1OpeningBowlerSelect').value);
+
+      if (sIdx === nsIdx) {
+        alert("Opening striker and non-striker cannot be the same player!");
+        return;
+      }
+
+      recordStateForUndo();
+
+      state.currentInning = 2;
+      initInningStats(1, sIdx, nsIdx, bIdx);
+
+      document.getElementById('inningsTransitionModal').classList.add('hidden');
+      saveState();
+      renderAll();
+    }
+
+    function currentInning() {
+      return state.innings[state.currentInning - 1];
+    }
+
+    function updateOversDisplay() {
+      const overs = parseInt(document.getElementById('setupMaxOvers').value) || 10;
+      document.getElementById('setupTotalBallsCalc').innerText = `= ${overs * 6} Legal Balls Total`;
+    }
+
+    function refreshLineupSelectors() {
+      const t1List = document.getElementById('setupT1Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const t2List = document.getElementById('setupT2Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
+
+      const t1Capt = document.getElementById('setupT1Captain');
+      const t2Capt = document.getElementById('setupT2Captain');
+      const t1Striker = document.getElementById('setupT1OpeningStriker');
+      const t1NonStriker = document.getElementById('setupT1OpeningNonStriker');
+      const t2Bowler = document.getElementById('setupT2OpeningBowler');
+
+      t1Capt.innerHTML = t1List.map(name => `<option value="${name}" ${name === state.team1.captain ? 'selected' : ''}>${name}</option>`).join('');
+      t2Capt.innerHTML = t2List.map(name => `<option value="${name}" ${name === state.team2.captain ? 'selected' : ''}>${name}</option>`).join('');
+
+      t1Striker.innerHTML = t1List.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${name}</option>`).join('');
+      t1NonStriker.innerHTML = t1List.map((name, i) => `<option value="${i}" ${i === 1 ? 'selected' : ''}>${name}</option>`).join('');
+      t2Bowler.innerHTML = t2List.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${name}</option>`).join('');
+
+      document.getElementById('setupScorerPin').value = state.scorerPin || '1234';
+    }
+
+    function handleExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+          const t1List = [];
+          const t2List = [];
+
+          rows.forEach((row, i) => {
+            if (i === 0 && row[0] && (row[0].toString().toLowerCase().includes('team') || row[0].toString().toLowerCase().includes('player'))) {
+              return;
+            }
+            if (row[0]) t1List.push(row[0].toString().trim());
+            if (row[1]) t2List.push(row[1].toString().trim());
+          });
+
+          if (t1List.length > 0) document.getElementById('setupT1Roster').value = t1List.join('\n');
+          if (t2List.length > 0) document.getElementById('setupT2Roster').value = t2List.join('\n');
+
+          refreshLineupSelectors();
+          alert(`Imported! Team 1: ${t1List.length} players, Team 2: ${t2List.length} players.`);
+        } catch (err) {
+          alert("Error parsing Excel file. Ensure simple two-column format.");
+          console.error(err);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function applySetupAndReset() {
+      const t1Name = document.getElementById('setupTeam1Name').value.trim() || 'Team 1';
+      const t2Name = document.getElementById('setupTeam2Name').value.trim() || 'Team 2';
+      const overs = parseInt(document.getElementById('setupMaxOvers').value) || 10;
+      const pin = document.getElementById('setupScorerPin').value.trim() || '1234';
+
+      const t1Roster = document.getElementById('setupT1Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const t2Roster = document.getElementById('setupT2Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
+
+      if (t1Roster.length < 2 || t2Roster.length < 2) {
+        alert("Each team needs at least 2 players!");
+        return;
+      }
+
+      const sIdx = parseInt(document.getElementById('setupT1OpeningStriker').value) || 0;
+      const nsIdx = parseInt(document.getElementById('setupT1OpeningNonStriker').value) || 1;
+      const bIdx = parseInt(document.getElementById('setupT2OpeningBowler').value) || 0;
+
+      if (sIdx === nsIdx) {
+        alert("Opening striker and non-striker cannot be the same player!");
+        return;
+      }
+
+      const t1Captain = document.getElementById('setupT1Captain').value || t1Roster[0];
+      const t2Captain = document.getElementById('setupT2Captain').value || t2Roster[0];
+
+      state.team1 = { name: t1Name, roster: t1Roster, captain: t1Captain };
+      state.team2 = { name: t2Name, roster: t2Roster, captain: t2Captain };
+      state.maxOvers = overs;
+      state.scorerPin = pin;
+      state.currentInning = 1;
+      state.matchWinner = null;
+      state.matchResultText = null;
+      state.historyStack = [];
+      state.innings = [
+        createNewInningObject(t1Name, t2Name),
+        createNewInningObject(t2Name, t1Name)
+      ];
+
+      initInningStats(0, sIdx, nsIdx, bIdx);
+      initInningStats(1, 0, 1, 0);
+
+      saveState();
+      switchTab('match');
+      renderAll();
+      alert(`Setup applied! Match PIN set to ${pin}`);
+    }
+
+    function archiveCurrentMatch() {
+      const inn1 = state.innings[0];
+      const inn2 = state.innings[1];
+
+      const matchRecord = {
+        id: 'match_' + Date.now(),
+        date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+        team1Name: state.team1.name,
+        team2Name: state.team2.name,
+        t1Score: `${inn1.totalRuns}/${inn1.wickets} (${formatOvers(inn1.legalBalls)})`,
+        t2Score: `${inn2.totalRuns}/${inn2.wickets} (${formatOvers(inn2.legalBalls)})`,
+        result: state.matchResultText || "Match Finished",
+        winner: state.matchWinner || "Completed",
+        fullState: JSON.parse(JSON.stringify(state))
+      };
+
+      const existingHistory = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+      existingHistory.unshift(matchRecord);
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(existingHistory));
+
+      alert("Match saved to history archive!");
+      renderHistory();
+      switchTab('history');
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('historyListContainer');
+      const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+
+      if (history.length === 0) {
+        container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-900 rounded-xl border border-slate-800">No archived matches found.</div>`;
+        return;
+      }
+
+      container.innerHTML = history.map((m) => `
+        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1.5 shadow">
+          <div class="flex justify-between items-center text-[10px] text-slate-400">
+            <span>${m.date}</span>
+            <span class="font-bold text-amber-400">🏆 ${m.result}</span>
+          </div>
+          <div class="flex justify-between items-center text-xs font-bold text-white">
+            <span>${m.team1Name}: <span class="text-emerald-400">${m.t1Score}</span></span>
+            <span>vs</span>
+            <span>${m.team2Name}: <span class="text-emerald-400">${m.t2Score}</span></span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearHistory() {
+      if (confirm("Are you sure you want to clear all archived match records?")) {
+        localStorage.removeItem(HISTORY_STORAGE_KEY);
+        renderHistory();
+      }
+    }
+
+    function confirmNewMatch() {
+      if (currentRole !== 'scorer') {
+        alert("Unlock Scorer Mode with PIN first to reset or start a new match.");
+        return;
+      }
+      if (confirm("Reset current match data? Make sure you archive first if needed.")) {
+        localStorage.removeItem(MATCH_STORAGE_KEY);
+        location.reload();
+      }
+    }
+
+    function formatOvers(balls) {
+      return `${Math.floor(balls / 6)}.${balls % 6}`;
+    }
+
+    function calcRunRate(runs, balls) {
+      if (balls === 0) return '0.00';
+      return ((runs / balls) * 6).toFixed(2);
+    }
+
+    function renderAll() {
+      const inn = currentInning();
+      const maxLegalBalls = state.maxOvers * 6;
+      const ballsRemaining = Math.max(0, maxLegalBalls - inn.legalBalls);
+
+      document.getElementById('headerMatchStatus').innerText = `${inn.battingTeam} Batting`;
+      document.getElementById('currentInningTitle').innerText = `${state.currentInning === 1 ? '1st' : '2nd'} Innings`;
+      document.getElementById('strikeRotatorCycle').innerText = `Strike: ${inn.cycleBallCount}/3 balls`;
+      document.getElementById('ballsRemainingDisplay').innerText = `${ballsRemaining} / ${maxLegalBalls}`;
+      document.getElementById('bowlerOverBallsCounter').innerText = `${inn.overLegalBalls}/6 balls`;
+
+      document.getElementById('battingTeamDisplay').innerText = inn.battingTeam;
+      document.getElementById('liveScore').innerText = `${inn.totalRuns}-${inn.wickets}`;
+      document.getElementById('liveOvers').innerText = formatOvers(inn.legalBalls);
+      document.getElementById('maxOversDisplay').innerText = state.maxOvers;
+      document.getElementById('crrDisplay').innerText = calcRunRate(inn.totalRuns, inn.legalBalls);
+
+      const undoBtn = document.getElementById('undoActionBtn');
+      if (undoBtn) {
+        undoBtn.disabled = (!state.historyStack || state.historyStack.length === 0);
+      }
+
+      const winnerBanner = document.getElementById('matchWinnerBanner');
+      const scorecardBanner = document.getElementById('scorecardWinnerBanner');
+      const crown = document.getElementById('battingTeamWinnerCrown');
+
+      if (state.matchWinner) {
+        winnerBanner.classList.remove('hidden');
+        scorecardBanner.classList.remove('hidden');
+        document.getElementById('matchWinnerBannerText').innerText = `Winner: ${state.matchResultText}`;
+        document.getElementById('scorecardWinnerText').innerText = `🏆 ${state.matchResultText}`;
+
+        if (state.matchWinner === inn.battingTeam) {
+          crown.classList.remove('hidden');
+        } else {
+          crown.classList.add('hidden');
+        }
+      } else {
+        winnerBanner.classList.add('hidden');
+        scorecardBanner.classList.add('hidden');
+        crown.classList.add('hidden');
+      }
+
+      const equationEl = document.getElementById('chaseEquationBanner');
+
+      if (state.currentInning === 2 && !state.matchWinner) {
+        const target = state.innings[0].totalRuns + 1;
+        const runsNeeded = target - inn.totalRuns;
+
+        document.getElementById('targetDisplay').innerText = `Target: ${target}`;
+        document.getElementById('rrrContainer').style.display = 'block';
+        document.getElementById('rrrDisplay').innerText = ballsRemaining > 0 ? ((runsNeeded / ballsRemaining) * 6).toFixed(2) : '--';
+
+        equationEl.classList.remove('hidden');
+        const isCrunch = (ballsRemaining <= 12 || runsNeeded <= 12);
+
+        if (runsNeeded > 0 && ballsRemaining > 0) {
+          equationEl.className = isCrunch 
+            ? "p-2.5 rounded-xl bg-amber-950/60 border border-amber-500/60 text-center animate-pulse shadow-md"
+            : "p-2 rounded-xl bg-slate-850 border border-slate-700/80 text-center text-xs";
+
+          equationEl.innerHTML = `
+            <div class="flex items-center justify-center gap-1.5 flex-wrap">
+              <span class="${isCrunch ? 'text-amber-300 font-extrabold text-sm' : 'text-emerald-400 font-bold'}">
+                ⚡ Need <span class="text-white text-base font-black">${runsNeeded}</span> run${runsNeeded > 1 ? 's' : ''} in <span class="text-white text-base font-black">${ballsRemaining}</span> ball${ballsRemaining > 1 ? 's' : ''}
+              </span>
+              <span class="text-[11px] text-slate-400 font-mono ml-1.5">(RRR: ${((runsNeeded / ballsRemaining) * 6).toFixed(2)})</span>
+            </div>
+          `;
+        } else {
+          equationEl.classList.add('hidden');
+        }
+      } else {
+        document.getElementById('targetDisplay').innerText = '';
+        document.getElementById('rrrContainer').style.display = 'none';
+        equationEl.classList.add('hidden');
+      }
+
+      // Over Timeline Deliveries
+      const timeline = document.getElementById('thisOverTimeline');
+      if (inn.currentOverDeliveries.length === 0) {
+        timeline.innerHTML = '<span class="text-[11px] text-slate-500 font-bold mr-1 uppercase tracking-wider shrink-0">This Over:</span><span class="text-xs text-slate-600 italic">Ready for 1st ball</span>';
+      } else {
+        timeline.innerHTML = '<span class="text-[11px] text-slate-500 font-bold mr-1 uppercase tracking-wider shrink-0">This Over:</span>';
+        inn.currentOverDeliveries.forEach(d => {
+          let bg = 'bg-slate-800 text-slate-200 border-slate-700';
+          if (d.type === 'run' && (d.val === 4 || d.val === 6)) bg = 'bg-emerald-900 border-emerald-500 text-emerald-200 font-bold';
+          if (d.type === 'penalty') bg = 'bg-rose-950 border-rose-600 text-rose-300 font-bold';
+          if (d.type === 'wicket') bg = 'bg-rose-600 border-rose-500 text-white font-bold';
+          if (d.type === 'extra') bg = 'bg-amber-950/90 border-amber-500 text-amber-300 font-bold';
+          timeline.innerHTML += `<span class="px-2 py-0.5 rounded-full border flex items-center justify-center text-[10px] font-mono shrink-0 shadow-sm ${bg}">${d.text}</span>`;
+        });
+      }
+
+      // Striker Rendering
+      const striker = inn.batters[inn.strikerIndex];
+      const nonStriker = inn.batters[inn.nonStrikerIndex];
+
+      if (striker) {
+        const sName = getFormattedPlayerName(striker.name, inn.battingTeam);
+        document.getElementById('strikerNameDisplay').innerText = `${sName} - ${striker.runs}* (${striker.balls}b)`;
+        document.getElementById('strikerStretch').innerText = striker.isExemptFromLimit ? '∞' : `${striker.stretchBalls}/12`;
+        document.getElementById('strikerRuns').innerText = striker.runs;
+        document.getElementById('strikerBalls').innerText = striker.balls;
+        document.getElementById('strikerFours').innerText = striker.fours;
+        document.getElementById('strikerSixes').innerText = striker.sixes;
+        document.getElementById('strikerSR').innerText = striker.balls > 0 ? ((striker.runs / striker.balls) * 100).toFixed(0) : '0.0';
+
+        const sPauseContainer = document.getElementById('strikerCaptainPauseContainer');
+        if (striker.stretchBalls >= 6 && striker.stretchBalls < 12 && !striker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
+          sPauseContainer.classList.remove('hidden');
+          document.getElementById('strikerCaptainBtnText').innerText = `📋 Captain's Call: Change Batsman (Faced ${striker.stretchBalls}/12 balls)`;
+        } else {
+          sPauseContainer.classList.add('hidden');
+        }
+      }
+
+      // Non-Striker Rendering
+      const nonStrikerRow = document.getElementById('nonStrikerRow');
+      const nsPauseContainer = document.getElementById('nonStrikerCaptainPauseContainer');
+      const chooseBtn = document.getElementById('chooseBatterBtn');
+      const swapBtn = document.getElementById('swapEndsBtn');
+
+      if (inn.isLastManStanding || !nonStriker) {
+        nonStrikerRow.classList.add('opacity-30');
+        document.getElementById('nonStrikerNameDisplay').innerText = '(No Partner - LMS)';
+        document.getElementById('nonStrikerStretch').innerText = '--';
+        document.getElementById('nonStrikerRuns').innerText = '0';
+        document.getElementById('nonStrikerBalls').innerText = '0';
+        document.getElementById('nonStrikerFours').innerText = '0';
+        document.getElementById('nonStrikerSixes').innerText = '0';
+        document.getElementById('nonStrikerSR').innerText = '0.0';
+        document.getElementById('lmsBadge').classList.remove('hidden');
+        nsPauseContainer.classList.add('hidden');
+        if (chooseBtn) chooseBtn.classList.add('hidden');
+        if (swapBtn) swapBtn.classList.add('hidden');
+      } else {
+        nonStrikerRow.classList.remove('opacity-30');
+        document.getElementById('lmsBadge').classList.add('hidden');
+        if (chooseBtn && currentRole === 'scorer') chooseBtn.classList.remove('hidden');
+        if (swapBtn && currentRole === 'scorer') swapBtn.classList.remove('hidden');
+        const nsName = getFormattedPlayerName(nonStriker.name, inn.battingTeam);
+        document.getElementById('nonStrikerNameDisplay').innerText = `${nsName} - ${nonStriker.runs} (${nonStriker.balls}b)`;
+        document.getElementById('nonStrikerStretch').innerText = nonStriker.isExemptFromLimit ? '∞' : `${nonStriker.stretchBalls}/12`;
+        document.getElementById('nonStrikerRuns').innerText = nonStriker.runs;
+        document.getElementById('nonStrikerBalls').innerText = nonStriker.balls;
+        document.getElementById('nonStrikerFours').innerText = nonStriker.fours;
+        document.getElementById('nonStrikerSixes').innerText = nonStriker.sixes;
+        document.getElementById('nonStrikerSR').innerText = nonStriker.balls > 0 ? ((nonStriker.runs / nonStriker.balls) * 100).toFixed(0) : '0.0';
+
+        if (nonStriker.stretchBalls >= 6 && nonStriker.stretchBalls < 12 && !nonStriker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
+          nsPauseContainer.classList.remove('hidden');
+          document.getElementById('nonStrikerCaptainBtnText').innerText = `📋 Captain's Call: Change Batsman (Faced ${nonStriker.stretchBalls}/12 balls)`;
+        } else {
+          nsPauseContainer.classList.add('hidden');
+        }
+      }
+
+      // Bowler Rendering
+      const bowler = inn.bowlers[inn.currentBowlerIndex];
+      if (bowler) {
+        document.getElementById('currentBowlerName').innerText = getFormattedPlayerName(bowler.name, inn.bowlingTeam);
+        document.getElementById('bowlerOvers').innerText = formatOvers(bowler.ballsBowled);
+        document.getElementById('bowlerRuns').innerText = bowler.runsConceded;
+        document.getElementById('bowlerWickets').innerText = bowler.wickets;
+        document.getElementById('bowlerEcon').innerText = bowler.ballsBowled > 0 ? ((bowler.runsConceded / bowler.ballsBowled) * 6).toFixed(1) : '0.0';
+      }
+
+      renderScorecardTables();
+    }
+
+    function renderScorecardTables() {
+      const inn1 = state.innings[0];
+      const inn2 = state.innings[1];
+
+      const t1Crown = (state.matchWinner === inn1.battingTeam) ? ' 👑' : '';
+      const t2Crown = (state.matchWinner === inn2.battingTeam) ? ' 👑' : '';
+
+      document.getElementById('t1ScorecardHeader').innerText = `${inn1.battingTeam}${t1Crown} Batting`;
+      document.getElementById('t1ScorecardTotal').innerText = `${inn1.totalRuns}-${inn1.wickets} (${formatOvers(inn1.legalBalls)} ov)`;
+
+      const t1Body = document.getElementById('t1BattingTableBody');
+      t1Body.innerHTML = inn1.batters.map(b => {
+        let status = 'not out';
+        if (b.isOut) status = b.dismissalText;
+        else if (b.isPaused) status = `retd (${b.stretchBalls}b)`;
+        else if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
+
+        return `
+          <tr class="py-1">
+            <td class="py-1 font-medium ${b.isOut ? 'text-slate-500' : (b.isPaused ? 'text-amber-400' : 'text-emerald-400')}">
+              ${getFormattedPlayerName(b.name, inn1.battingTeam)} <span class="text-[10px] text-slate-500 font-normal">(${status})</span>
+            </td>
+            <td class="text-right font-bold text-white font-mono">${b.runs}</td>
+            <td class="text-right text-slate-400 font-mono">${b.balls}</td>
+            <td class="text-right text-slate-400 font-mono">${b.fours}</td>
+            <td class="text-right text-slate-400 font-mono">${b.sixes}</td>
+            <td class="text-right text-slate-400 font-mono">${b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(0) : '0'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const t1BowlBody = document.getElementById('t1BowlingTableBody');
+      t1BowlBody.innerHTML = inn1.bowlers.map(b => {
+        let note = b.isInjured ? ' <span class="text-[10px] text-rose-400 font-normal">(Injured / Retd)</span>' : '';
+        return `
+          <tr class="py-1">
+            <td class="py-1 font-medium text-slate-200">${getFormattedPlayerName(b.name, inn1.bowlingTeam)}${note}</td>
+            <td class="text-right font-mono text-slate-300">${formatOvers(b.ballsBowled)}</td>
+            <td class="text-right font-mono text-slate-300">${b.runsConceded}</td>
+            <td class="text-right font-bold font-mono text-emerald-400">${b.wickets}</td>
+            <td class="text-right font-mono text-slate-400">${b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner) {
+        document.getElementById('t2InningsContainer').classList.remove('hidden');
+        document.getElementById('t2ScorecardHeader').innerText = `${inn2.battingTeam}${t2Crown} Batting`;
+        document.getElementById('t2ScorecardTotal').innerText = `${inn2.totalRuns}-${inn2.wickets} (${formatOvers(inn2.legalBalls)} ov)`;
+
+        const t2Body = document.getElementById('t2BattingTableBody');
+        t2Body.innerHTML = inn2.batters.map(b => {
+          let status = 'not out';
+          if (b.isOut) status = b.dismissalText;
+          else if (b.isPaused) status = `retd (${b.stretchBalls}b)`;
+          else if (b.isExemptFromLimit) status = 'unlimited (2nd spell)';
+
+          return `
+            <tr class="py-1">
+              <td class="py-1 font-medium ${b.isOut ? 'text-slate-500' : (b.isPaused ? 'text-amber-400' : 'text-emerald-400')}">
+                ${getFormattedPlayerName(b.name, inn2.battingTeam)} <span class="text-[10px] text-slate-500 font-normal">(${status})</span>
+              </td>
+              <td class="text-right font-bold text-white font-mono">${b.runs}</td>
+              <td class="text-right text-slate-400 font-mono">${b.balls}</td>
+              <td class="text-right text-slate-400 font-mono">${b.fours}</td>
+              <td class="text-right text-slate-400 font-mono">${b.sixes}</td>
+              <td class="text-right text-slate-400 font-mono">${b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(0) : '0'}</td>
+            </tr>
+          `;
+        }).join('');
+
+        const t2BowlBody = document.getElementById('t2BowlingTableBody');
+        t2BowlBody.innerHTML = inn2.bowlers.map(b => {
+          let note = b.isInjured ? ' <span class="text-[10px] text-rose-400 font-normal">(Injured / Retd)</span>' : '';
+          return `
+            <tr class="py-1">
+              <td class="py-1 font-medium text-slate-200">${getFormattedPlayerName(b.name, inn2.bowlingTeam)}${note}</td>
+              <td class="text-right font-mono text-slate-300">${formatOvers(b.ballsBowled)}</td>
+              <td class="text-right font-mono text-slate-300">${b.runsConceded}</td>
+              <td class="text-right font-bold font-mono text-emerald-400">${b.wickets}</td>
+              <td class="text-right font-mono text-slate-400">${b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0'}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    function switchTab(tabId) {
+      ['match', 'scorecard', 'history', 'setup'].forEach(t => {
+        document.getElementById(`tab${capitalize(t)}`).classList.add('hidden');
+        document.getElementById(`nav${capitalize(t)}`).classList.remove('tab-active');
+      });
+
+      document.getElementById(`tab${capitalize(tabId)}`).classList.remove('hidden');
+      document.getElementById(`nav${capitalize(tabId)}`).classList.add('tab-active');
+
+      if (tabId === 'history') renderHistory();
+      if (tabId === 'setup') refreshLineupSelectors();
+    }
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    // Complete WhatsApp Scorecard Export
+    function copyMatchSummary() {
+      const inn1 = state.innings[0];
+      const inn2 = state.innings[1];
+
+      let text = `🏏 *WEEKEND CAGE CRICKET - OFFICIAL MATCH REPORT* 🏏\n`;
+      text += `📅 Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}\n`;
+      text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      if (state.matchResultText) {
+        text += `🏆 *RESULT: ${state.matchResultText.toUpperCase()}* 🏆\n`;
+      } else {
+        text += `⏳ *MATCH IN PROGRESS (${state.currentInning === 1 ? '1st' : '2nd'} Innings)*\n`;
+      }
+      text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+      function generateInningScorecardText(inn, innNumber) {
+        let block = `📋 *${innNumber === 1 ? '1ST' : '2ND'} INNINGS: ${inn.battingTeam.toUpperCase()}*\n`;
+        block += `Total: *${inn.totalRuns}/${inn.wickets}* in *${formatOvers(inn.legalBalls)}* Overs (CRR: ${calcRunRate(inn.totalRuns, inn.legalBalls)})\n`;
+        block += `Extras: *${inn.extras.wides + inn.extras.noballs}* (WD: ${inn.extras.wides}, NB: ${inn.extras.noballs})\n\n`;
+
+        block += `*BATTING SCORECARD:*\n`;
+        block += `-------------------------------------------\n`;
+        block += `Batter                    R (B)  4s 6s   SR\n`;
+        block += `-------------------------------------------\n`;
+
+        const dnbList = [];
+
+        inn.batters.forEach(b => {
+          if (!b.hasBatted && b.balls === 0 && !b.isOut && !b.isPaused) {
+            dnbList.push(getFormattedPlayerName(b.name, inn.battingTeam));
+            return;
+          }
+
+          let name = getFormattedPlayerName(b.name, inn.battingTeam);
+          let r = b.runs.toString().padStart(3, ' ');
+          let balls = b.balls.toString().padStart(3, ' ');
+          let fours = b.fours.toString().padStart(2, ' ');
+          let sixes = b.sixes.toString().padStart(2, ' ');
+          let sr = (b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(0) : '0').padStart(4, ' ');
+
+          let status = 'not out';
+          if (b.isOut) status = b.dismissalText;
+          else if (b.isPaused) status = `retd (${b.stretchBalls}b)`;
+          else if (b.isExemptFromLimit) status = 'not out (∞)';
+
+          block += `• ${name}\n  └ ${status} | ${r} (${balls}) | 4s:${fours} 6s:${sixes} | SR: ${sr}\n`;
+        });
+
+        if (dnbList.length > 0) {
+          block += `\n*Yet to Bat (DNB):* ${dnbList.join(', ')}\n`;
+        }
+
+        block += `\n*BOWLING FIGURES:*\n`;
+        block += `-------------------------------------------\n`;
+        block += `Bowler           O    R    W    Econ\n`;
+        block += `-------------------------------------------\n`;
+
+        const activeBowlers = inn.bowlers.filter(b => b.ballsBowled > 0);
+        if (activeBowlers.length === 0) {
+          block += `No overs bowled yet.\n`;
+        } else {
+          activeBowlers.forEach(b => {
+            let name = getFormattedPlayerName(b.name, inn.bowlingTeam);
+            let ov = formatOvers(b.ballsBowled).padStart(4, ' ');
+            let r = b.runsConceded.toString().padStart(4, ' ');
+            let w = b.wickets.toString().padStart(2, ' ');
+            let econ = (b.ballsBowled > 0 ? ((b.runsConceded / b.ballsBowled) * 6).toFixed(1) : '0.0').padStart(5, ' ');
+            let inj = b.isInjured ? ' [Injured/Retd]' : '';
+
+            block += `• ${name}${inj}\n  └ ${ov} ov, ${r} r, ${w} w, Econ: ${econ}\n`;
+          });
+        }
+
+        block += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        return block;
+      }
+
+      text += generateInningScorecardText(inn1, 1);
+
+      if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner) {
+        text += generateInningScorecardText(inn2, 2);
+      }
+
+      text += `_Scored pitch-side on HS Cage Cricket Web Scorer_`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Complete official match scorecard copied to clipboard! Paste directly into WhatsApp.");
+      }).catch(err => {
+        console.error("Clipboard copy failed", err);
+      });
+    }
+
+    function exportMatchJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `cricket_match_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+  </script>
+</body>
+</html>
