@@ -6,8 +6,6 @@
   <title>Weekend Cage Cricket Scorer</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
   <!-- SheetJS for Excel / CSV Import -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -16,7 +14,7 @@
     button { touch-action: manipulation; }
     @keyframes pulse-red {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.7; transform: scale(1.1); }
+      50% { opacity: 0.7; transform: scale(1.08); }
     }
     .mic-active {
       animation: pulse-red 1s infinite;
@@ -408,7 +406,7 @@
       <div id="historyListContainer" class="space-y-2.5"></div>
     </div>
 
-    <!-- ================= TAB: SETUP (WITH VOICE INPUT) ================= -->
+    <!-- ================= TAB: SETUP (VOICE INPUT FOR TEAMS & PLAYERS) ================= -->
     <div id="tabSetup" class="hidden space-y-4">
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -417,22 +415,22 @@
         </div>
         
         <div class="grid grid-cols-2 gap-3">
-          <!-- Team 1 Name with Voice Mic -->
+          <!-- Team 1 Name -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-xs text-slate-400">Team 1 (Bat 1st)</label>
-              <button type="button" id="micBtnT1" onclick="startVoiceInput('setupTeam1Name', 'micBtnT1')" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 1">
+              <button type="button" id="micBtnT1" onclick="startVoiceInput('setupTeam1Name', 'micBtnT1', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 1 Name">
                 🎙️ Mic
               </button>
             </div>
             <input type="text" id="setupTeam1Name" value="Hawks" onchange="refreshLineupSelectors()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
           </div>
 
-          <!-- Team 2 Name with Voice Mic -->
+          <!-- Team 2 Name -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-xs text-slate-400">Team 2 (Bowl 1st)</label>
-              <button type="button" id="micBtnT2" onclick="startVoiceInput('setupTeam2Name', 'micBtnT2')" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 2">
+              <button type="button" id="micBtnT2" onclick="startVoiceInput('setupTeam2Name', 'micBtnT2', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 2 Name">
                 🎙️ Mic
               </button>
             </div>
@@ -478,16 +476,22 @@
         </div>
       </div>
 
-      <!-- Squad Rosters -->
+      <!-- Squad Rosters with Voice Input for Players -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
           <h3 class="font-bold text-white text-sm">Squad Rosters</h3>
-          <span class="text-[10px] text-emerald-400 font-bold">1 per line</span>
+          <span class="text-[10px] text-emerald-400 font-bold">Voice: 1 or multiple players</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3 text-xs">
+          <!-- Team 1 Players -->
           <div>
-            <label class="text-[11px] font-bold text-slate-400 block mb-1">Team 1 Players</label>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-[11px] font-bold text-slate-400">Team 1 Players</label>
+              <button type="button" id="micBtnRosterT1" onclick="startVoiceInput('setupT1Roster', 'micBtnRosterT1', true)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Speak player names for Team 1">
+                🎙️ Add Player
+              </button>
+            </div>
             <textarea id="setupT1Roster" oninput="refreshLineupSelectors()" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono leading-tight">Rohit
 Virat
 Surya
@@ -495,8 +499,15 @@ Hardik
 Rinku
 Axar</textarea>
           </div>
+
+          <!-- Team 2 Players -->
           <div>
-            <label class="text-[11px] font-bold text-slate-400 block mb-1">Team 2 Players</label>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-[11px] font-bold text-slate-400">Team 2 Players</label>
+              <button type="button" id="micBtnRosterT2" onclick="startVoiceInput('setupT2Roster', 'micBtnRosterT2', true)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Speak player names for Team 2">
+                🎙️ Add Player
+              </button>
+            </div>
             <textarea id="setupT2Roster" oninput="refreshLineupSelectors()" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono leading-tight">Bumrah
 Shami
 Kuldeep
@@ -777,8 +788,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v32_voice_enabled';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v32_voice_enabled';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v33_voice_roster_enabled';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v33_voice_roster_enabled';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -861,9 +872,9 @@ Chahal</textarea>
     }
 
     // ========================================================
-    // VOICE SPEECH RECOGNITION FOR TEAM NAMES
+    // VOICE SPEECH RECOGNITION (TEAMS & PLAYER ROSTER)
     // ========================================================
-    function startVoiceInput(targetInputId, micButtonId) {
+    function startVoiceInput(targetElementId, micButtonId, isRoster = false) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
       if (!SpeechRecognition) {
@@ -893,12 +904,31 @@ Chahal</textarea>
       recognition.onresult = function(event) {
         const spokenText = event.results[0][0].transcript;
         if (spokenText && spokenText.trim().length > 0) {
-          // Capitalize first letter of each word
-          const formatted = spokenText.trim().replace(/\b\w/g, c => c.toUpperCase());
-          const targetInput = document.getElementById(targetInputId);
-          if (targetInput) {
-            targetInput.value = formatted;
-            targetInput.dispatchEvent(new Event('change'));
+          const targetEl = document.getElementById(targetElementId);
+          if (!targetEl) return;
+
+          if (!isRoster) {
+            // Single team name: format Title Case
+            const formatted = spokenText.trim().replace(/\b\w/g, c => c.toUpperCase());
+            targetEl.value = formatted;
+            targetEl.dispatchEvent(new Event('change'));
+          } else {
+            // Player Roster: handles single name or multiple names ("Rohit, Virat and Hardik")
+            let names = spokenText
+              .replace(/\band\b/gi, ',')
+              .split(',')
+              .map(s => s.trim().replace(/\b\w/g, c => c.toUpperCase()))
+              .filter(s => s.length > 0);
+
+            if (names.length > 0) {
+              const currentVal = targetEl.value.trim();
+              if (currentVal.length === 0) {
+                targetEl.value = names.join('\n');
+              } else {
+                targetEl.value = currentVal + '\n' + names.join('\n');
+              }
+              refreshLineupSelectors();
+            }
           }
         }
       };
