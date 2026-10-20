@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weekend Cage Cricket Scorer</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,6 +13,17 @@
 
   <style>
     .tab-active { border-bottom: 3px solid #10b981; color: #10b981; font-weight: 700; }
+    button { touch-action: manipulation; }
+    @keyframes pulse-red {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
+    .mic-active {
+      animation: pulse-red 1s infinite;
+      background-color: #e11d48 !important;
+      color: #ffffff !important;
+      border-color: #fda4af !important;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-16 select-none">
@@ -28,34 +39,32 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <!-- Role Toggle Button (PIN Protected) -->
-      <button id="modeToggleBtn" onclick="handleRoleToggle()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700">
-        <span id="roleIconContainer" class="flex items-center">
-          <i data-lucide="eye" class="w-3 h-3 text-slate-400"></i>
-        </span>
+      <!-- Role Toggle Button -->
+      <button id="modeToggleBtn" type="button" onclick="handleRoleToggle()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700">
+        <span id="roleIconContainer" class="flex items-center text-xs">👁️</span>
         <span id="roleLabel">Viewer</span>
       </button>
       
-      <!-- New Match Button (Requires Scorer Role) -->
-      <button onclick="confirmNewMatch()" class="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white" title="New Match">
-        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+      <!-- New Match Button -->
+      <button type="button" onclick="confirmNewMatch()" class="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white" title="New Match">
+        <span class="text-sm">🔄</span>
       </button>
     </div>
   </header>
 
   <!-- Navigation Bar -->
   <nav class="bg-slate-900 border-b border-slate-800 px-2 flex justify-around text-xs font-semibold text-slate-400">
-    <button onclick="switchTab('match')" id="navMatch" class="py-2.5 px-3 tab-active transition flex items-center gap-1.5">
-      <i data-lucide="play" class="w-3.5 h-3.5"></i> Match
+    <button type="button" onclick="switchTab('match')" id="navMatch" class="py-2.5 px-3 tab-active transition flex items-center gap-1.5">
+      ▶ Match
     </button>
-    <button onclick="switchTab('scorecard')" id="navScorecard" class="py-2.5 px-3 transition flex items-center gap-1.5">
-      <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Scorecard
+    <button type="button" onclick="switchTab('scorecard')" id="navScorecard" class="py-2.5 px-3 transition flex items-center gap-1.5">
+      📋 Scorecard
     </button>
-    <button onclick="switchTab('history')" id="navHistory" class="py-2.5 px-3 transition flex items-center gap-1.5">
-      <i data-lucide="archive" class="w-3.5 h-3.5"></i> History
+    <button type="button" onclick="switchTab('history')" id="navHistory" class="py-2.5 px-3 transition flex items-center gap-1.5">
+      📁 History
     </button>
-    <button onclick="switchTab('setup')" id="navSetup" class="py-2.5 px-3 transition flex items-center gap-1.5">
-      <i data-lucide="settings" class="w-3.5 h-3.5"></i> Setup
+    <button type="button" onclick="switchTab('setup')" id="navSetup" class="py-2.5 px-3 transition flex items-center gap-1.5">
+      ⚙️ Setup
     </button>
   </nav>
 
@@ -68,10 +77,10 @@
       <!-- Viewer Banner -->
       <div id="viewerBanner" class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center text-xs text-slate-400 flex items-center justify-between">
         <span class="flex items-center gap-1.5">
-          <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span class="text-amber-400">🔒</span>
           <span><strong>Viewer Mode:</strong> Read-only pitch scorecard</span>
         </span>
-        <button onclick="openPinModal()" class="text-emerald-400 font-bold underline hover:text-emerald-300 text-[11px]">
+        <button type="button" onclick="openPinModal()" class="text-emerald-400 font-bold underline hover:text-emerald-300 text-[11px]">
           Unlock Scorer
         </button>
       </div>
@@ -85,7 +94,7 @@
             <h2 class="text-base font-black text-slate-950 leading-tight" id="matchWinnerBannerText">Winner: --</h2>
           </div>
         </div>
-        <button onclick="switchTab('scorecard')" class="px-2.5 py-1 bg-slate-950 text-amber-300 text-xs font-black rounded-lg shadow">
+        <button type="button" onclick="switchTab('scorecard')" class="px-2.5 py-1 bg-slate-950 text-amber-300 text-xs font-black rounded-lg shadow">
           View Summary
         </button>
       </div>
@@ -103,7 +112,7 @@
         <div class="flex items-baseline justify-between">
           <div>
             <div class="flex items-center gap-1.5">
-              <h2 class="text-xl font-extrabold text-white" id="battingTeamDisplay">Team A</h2>
+              <h2 class="text-xl font-extrabold text-white" id="battingTeamDisplay">Hawks</h2>
               <span id="battingTeamWinnerCrown" class="text-lg hidden">👑</span>
             </div>
             <div class="flex items-baseline gap-2 mt-1">
@@ -156,11 +165,10 @@
               <span class="text-emerald-300" id="strikerSR">0.0</span>
             </div>
           </div>
-          <!-- 6-Ball Captain Option Alert -->
+          <!-- 6-Ball Captain Alert -->
           <div id="strikerCaptainPauseContainer" class="hidden pt-1">
-            <button onclick="captainVoluntaryPause('striker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
-              <span class="text-xs">📋</span>
-              <span id="strikerCaptainBtnText">Captain's Call: Change Batsman (Faced 6+ balls)</span>
+            <button type="button" onclick="captainVoluntaryPause('striker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
+              <span id="strikerCaptainBtnText">📋 Captain's Call: Change Batsman (Faced 6+ balls)</span>
             </button>
           </div>
         </div>
@@ -179,11 +187,10 @@
               <span class="text-slate-400" id="nonStrikerSR">0.0</span>
             </div>
           </div>
-          <!-- 6-Ball Captain Option Alert -->
+          <!-- 6-Ball Captain Alert -->
           <div id="nonStrikerCaptainPauseContainer" class="hidden pt-1">
-            <button onclick="captainVoluntaryPause('nonStriker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
-              <span class="text-xs">📋</span>
-              <span id="nonStrikerCaptainBtnText">Captain's Call: Change Batsman (Faced 6+ balls)</span>
+            <button type="button" onclick="captainVoluntaryPause('nonStriker')" class="scorer-control w-full py-1 px-2 rounded-md bg-amber-950/80 border border-amber-500/60 text-amber-200 text-[11px] font-bold hover:bg-amber-900 transition flex items-center justify-center gap-1.5 shadow-sm">
+              <span id="nonStrikerCaptainBtnText">📋 Captain's Call: Change Batsman (Faced 6+ balls)</span>
             </button>
           </div>
         </div>
@@ -195,12 +202,12 @@
           </div>
           
           <div class="flex items-center gap-2 ml-auto">
-            <button id="chooseBatterBtn" onclick="openChooseBatterModal()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1.5 border border-emerald-500/40 transition">
-              <i data-lucide="user-plus" class="w-3.5 h-3.5 text-emerald-400"></i> Choose Batsman
+            <button id="chooseBatterBtn" type="button" onclick="openChooseBatterModal()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1 border border-emerald-500/40 transition">
+              ➕ Choose Batsman
             </button>
             
-            <button id="swapEndsBtn" onclick="manualSwapStrike()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 border border-slate-700 transition">
-              <i data-lucide="arrow-left-right" class="w-3.5 h-3.5 text-amber-400"></i> Swap Ends
+            <button id="swapEndsBtn" type="button" onclick="manualSwapStrike()" class="scorer-control text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1 border border-slate-700 transition">
+              ⇄ Swap Ends
             </button>
           </div>
         </div>
@@ -223,9 +230,8 @@
               <div><span class="text-slate-500">W:</span> <span id="bowlerWickets" class="font-bold text-emerald-400">0</span></div>
               <div><span class="text-slate-500">Econ:</span> <span id="bowlerEcon" class="font-bold text-slate-300">0.0</span></div>
             </div>
-            <!-- Bowler Change / Injury Modal Trigger -->
-            <button onclick="openMidOverBowlerModal()" class="scorer-control px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 font-bold text-[11px] flex items-center gap-1 shadow-sm">
-              <i data-lucide="activity" class="w-3 h-3 text-rose-400"></i> Bowler Injured / Change
+            <button type="button" onclick="openMidOverBowlerModal()" class="scorer-control px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 font-bold text-[11px] flex items-center gap-1 shadow-sm">
+              🏥 Bowler Injured / Change
             </button>
           </div>
         </div>
@@ -234,25 +240,25 @@
       <!-- SCORER KEYPAD -->
       <div id="scorerKeypad" class="scorer-control bg-slate-900 rounded-2xl border border-slate-800 p-3 shadow-lg space-y-2.5">
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
-          <span>Scoring Pad (Strike swaps automatically after 3 balls)</span>
-          <span class="text-emerald-400 font-normal">No LBW / Byes</span>
+          <span>Scoring Pad (Strike auto-rotates every 3 legal balls)</span>
+          <span class="text-emerald-400 font-normal">Cage Rules</span>
         </div>
 
-        <!-- Primary Runs Grid (8 Keys) -->
+        <!-- 8-Keypad -->
         <div class="grid grid-cols-4 gap-2">
-          <button onclick="recordDelivery(0)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">0</button>
-          <button onclick="recordDelivery(1)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">1</button>
-          <button onclick="recordDelivery(2)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">2</button>
-          <button onclick="recordDelivery(3)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">3</button>
-          <button onclick="recordDelivery(4)" class="h-12 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 active:scale-95 text-lg font-black text-emerald-300 shadow">4</button>
-          <button onclick="recordDelivery(6)" class="h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-lg font-black text-white shadow">6</button>
+          <button type="button" onclick="recordDelivery(0)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">0</button>
+          <button type="button" onclick="recordDelivery(1)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">1</button>
+          <button type="button" onclick="recordDelivery(2)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">2</button>
+          <button type="button" onclick="recordDelivery(3)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-black text-white shadow border border-slate-700">3</button>
+          <button type="button" onclick="recordDelivery(4)" class="h-12 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 active:scale-95 text-lg font-black text-emerald-300 shadow">4</button>
+          <button type="button" onclick="recordDelivery(6)" class="h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-lg font-black text-white shadow">6</button>
           
-          <button onclick="openWicketModal()" class="h-12 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-sm font-black text-white flex flex-col items-center justify-center leading-tight shadow border border-rose-500">
+          <button type="button" onclick="openWicketModal()" class="h-12 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-sm font-black text-white flex flex-col items-center justify-center leading-tight shadow border border-rose-500">
             <span>OUT</span>
             <span class="text-[8px] font-normal text-rose-200">Cannot return</span>
           </button>
           
-          <button onclick="openRetdModal()" class="h-12 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-sm font-black text-slate-950 flex flex-col items-center justify-center leading-tight shadow border border-amber-400">
+          <button type="button" onclick="openRetdModal()" class="h-12 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-sm font-black text-slate-950 flex flex-col items-center justify-center leading-tight shadow border border-amber-400">
             <span>RETD</span>
             <span class="text-[8px] font-bold text-amber-950">Can return</span>
           </button>
@@ -260,20 +266,20 @@
 
         <!-- Extras, Penalty & Undo Row -->
         <div class="grid grid-cols-4 gap-2 pt-1 border-t border-slate-800">
-          <button onclick="recordPenaltyMinus2()" class="py-2 rounded-lg bg-rose-950/90 border border-rose-600/70 hover:bg-rose-900 active:scale-95 text-xs font-black text-rose-300 flex flex-col items-center justify-center leading-tight shadow">
+          <button type="button" onclick="recordPenaltyMinus2()" class="py-2 rounded-lg bg-rose-950/90 border border-rose-600/70 hover:bg-rose-900 active:scale-95 text-xs font-black text-rose-300 flex flex-col items-center justify-center leading-tight shadow">
             <span>-2 Runs</span>
-            <span class="text-[8px] font-normal text-rose-400">Special</span>
+            <span class="text-[8px] font-normal text-rose-400">Penalty</span>
           </button>
-          <button onclick="recordInstantWide()" class="py-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
+          <button type="button" onclick="recordInstantWide()" class="py-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
             <span>Wide (+1)</span>
             <span class="text-[8px] text-amber-400/80 font-normal">(no ball)</span>
           </button>
-          <button onclick="openNoBallModal()" class="py-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
+          <button type="button" onclick="openNoBallModal()" class="py-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-amber-900/50 flex flex-col items-center justify-center">
             <span>No Ball (+1)</span>
             <span class="text-[8px] text-amber-400/80 font-normal">(bat runs)</span>
           </button>
-          <button id="undoActionBtn" onclick="undoLastBall()" class="py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-700 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
-            <i data-lucide="undo" class="w-3.5 h-3.5 text-rose-400"></i> Undo
+          <button id="undoActionBtn" type="button" onclick="undoLastBall()" class="py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-700 flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+            ↩ Undo
           </button>
         </div>
       </div>
@@ -290,13 +296,13 @@
       <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
         <div>
           <h3 class="font-bold text-white text-sm" id="scorecardMatchTitle">Detailed Match Scorecard</h3>
-          <p class="text-xs text-slate-400" id="scorecardSummarySubtitle">Live match summary</p>
+          <p class="text-xs text-slate-400" id="scorecardSummarySubtitle">Live match figures</p>
         </div>
         <div class="flex gap-2">
-          <button onclick="copyMatchSummary()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 shadow">
-            <i data-lucide="share-2" class="w-3.5 h-3.5"></i> WhatsApp
+          <button type="button" onclick="copyMatchSummary()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 shadow">
+            📤 WhatsApp
           </button>
-          <button onclick="exportMatchJSON()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700">
+          <button type="button" onclick="exportMatchJSON()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700">
             Export JSON
           </button>
         </div>
@@ -381,20 +387,20 @@
       </div>
 
       <div class="pt-2">
-        <button onclick="archiveCurrentMatch()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs flex items-center justify-center gap-1.5 shadow-lg">
-          <i data-lucide="save" class="w-4 h-4"></i> Complete & Save Match to Archive
+        <button type="button" onclick="archiveCurrentMatch()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs flex items-center justify-center gap-1.5 shadow-lg">
+          💾 Save Match to History
         </button>
       </div>
     </div>
 
-    <!-- ================= TAB: HISTORY / ARCHIVE ================= -->
+    <!-- ================= TAB: HISTORY ================= -->
     <div id="tabHistory" class="hidden space-y-3">
       <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
         <div>
           <h3 class="font-bold text-white text-sm">Past Matches Archive</h3>
-          <p class="text-[11px] text-slate-400">Matches permanently saved on this device</p>
+          <p class="text-[11px] text-slate-400">Saved on this device</p>
         </div>
-        <button onclick="clearHistory()" class="scorer-control text-[11px] text-rose-400 hover:underline">
+        <button type="button" onclick="clearHistory()" class="scorer-control text-[11px] text-rose-400 hover:underline">
           Clear All
         </button>
       </div>
@@ -402,23 +408,37 @@
       <div id="historyListContainer" class="space-y-2.5"></div>
     </div>
 
-    <!-- ================= TAB: SETUP & SQUAD IMPORT ================= -->
+    <!-- ================= TAB: SETUP (WITH VOICE INPUT) ================= -->
     <div id="tabSetup" class="hidden space-y-4">
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
           <h3 class="font-bold text-white text-sm">Match Configuration</h3>
-          <span class="text-[10px] text-emerald-400 font-bold">PIN Security</span>
+          <span class="text-[10px] text-emerald-400 font-bold">🎙️ Voice Input Enabled</span>
         </div>
         
         <div class="grid grid-cols-2 gap-3">
+          <!-- Team 1 Name with Voice Mic -->
           <div>
-            <label class="text-xs text-slate-400 block mb-1">Team 1 (Batting 1st)</label>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs text-slate-400">Team 1 (Bat 1st)</label>
+              <button type="button" id="micBtnT1" onclick="startVoiceInput('setupTeam1Name', 'micBtnT1')" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 1">
+                🎙️ Mic
+              </button>
+            </div>
             <input type="text" id="setupTeam1Name" value="Hawks" onchange="refreshLineupSelectors()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
           </div>
+
+          <!-- Team 2 Name with Voice Mic -->
           <div>
-            <label class="text-xs text-slate-400 block mb-1">Team 2 (Bowling 1st)</label>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs text-slate-400">Team 2 (Bowl 1st)</label>
+              <button type="button" id="micBtnT2" onclick="startVoiceInput('setupTeam2Name', 'micBtnT2')" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 2">
+                🎙️ Mic
+              </button>
+            </div>
             <input type="text" id="setupTeam2Name" value="Tigers" onchange="refreshLineupSelectors()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
           </div>
+
           <div>
             <label class="text-xs text-slate-400 block mb-1">Team 1 Captain (c)</label>
             <select id="setupT1Captain" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-400 font-bold"></select>
@@ -439,7 +459,7 @@
         </div>
       </div>
 
-      <!-- Opening Lineup Configuration -->
+      <!-- Opening Lineup -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <h3 class="font-bold text-white text-sm border-b border-slate-800 pb-2">1st Innings: Opening Lineup</h3>
         <div class="space-y-2 text-xs">
@@ -458,36 +478,35 @@
         </div>
       </div>
 
-      <!-- Excel / CSV Squad Upload -->
+      <!-- Squad Rosters -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <h3 class="font-bold text-white text-sm">Upload Squads (Excel / CSV)</h3>
-          <span class="text-[10px] text-emerald-400 font-bold">.xlsx, .xls, .csv</span>
+          <h3 class="font-bold text-white text-sm">Squad Rosters</h3>
+          <span class="text-[10px] text-emerald-400 font-bold">1 per line</span>
         </div>
-        
-        <p class="text-xs text-slate-400">
-          Column A: <strong>Team 1 Players</strong>, Column B: <strong>Team 2 Players</strong>.
-        </p>
-
-        <label class="block border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-4 text-center cursor-pointer bg-slate-800/40 transition">
-          <i data-lucide="file-spreadsheet" class="w-8 h-8 text-emerald-400 mx-auto mb-1"></i>
-          <span class="text-xs font-semibold text-slate-200 block">Tap to select Excel/CSV file</span>
-          <span class="text-[10px] text-slate-500 block">Autofills playing squads</span>
-          <input type="file" id="excelRosterInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
-        </label>
 
         <div class="grid grid-cols-2 gap-3 text-xs">
           <div>
-            <label class="text-[11px] font-bold text-slate-400 block mb-1">Team 1 Players (1 per line)</label>
-            <textarea id="setupT1Roster" oninput="refreshLineupSelectors()" rows="5" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono leading-tight">Rohit&#10;Virat&#10;Surya&#10;Hardik&#10;Rinku&#10;Axar</textarea>
+            <label class="text-[11px] font-bold text-slate-400 block mb-1">Team 1 Players</label>
+            <textarea id="setupT1Roster" oninput="refreshLineupSelectors()" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono leading-tight">Rohit
+Virat
+Surya
+Hardik
+Rinku
+Axar</textarea>
           </div>
           <div>
-            <label class="text-[11px] font-bold text-slate-400 block mb-1">Team 2 Players (1 per line)</label>
-            <textarea id="setupT2Roster" oninput="refreshLineupSelectors()" rows="5" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono leading-tight">Bumrah&#10;Shami&#10;Kuldeep&#10;Siraj&#10;Arshdeep&#10;Chahal</textarea>
+            <label class="text-[11px] font-bold text-slate-400 block mb-1">Team 2 Players</label>
+            <textarea id="setupT2Roster" oninput="refreshLineupSelectors()" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono leading-tight">Bumrah
+Shami
+Kuldeep
+Siraj
+Arshdeep
+Chahal</textarea>
           </div>
         </div>
 
-        <button onclick="applySetupAndReset()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
+        <button type="button" onclick="applySetupAndReset()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
           Apply Setup & Start Match
         </button>
       </div>
@@ -501,10 +520,8 @@
   <div id="chooseBatterModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-white text-base flex items-center gap-1.5">
-          <span class="text-emerald-400">Choose Incoming Batsman</span>
-        </h3>
-        <button onclick="closeChooseBatterModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <h3 class="font-bold text-white text-base">Choose Incoming Batsman</h3>
+        <button type="button" onclick="closeChooseBatterModal()" class="text-slate-400 hover:text-white">✕</button>
       </div>
 
       <p class="text-[11px] text-slate-400 leading-normal">
@@ -524,24 +541,22 @@
       </div>
 
       <div class="pt-2 flex gap-2">
-        <button onclick="closeChooseBatterModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
-        <button onclick="confirmChooseBatter()" class="w-1/2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">Confirm Change</button>
+        <button type="button" onclick="closeChooseBatterModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button type="button" onclick="confirmChooseBatter()" class="w-1/2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">Confirm Change</button>
       </div>
     </div>
   </div>
 
-  <!-- MID-OVER / BOWLER INJURY & CHANGE MODAL -->
+  <!-- MID-OVER / BOWLER INJURY MODAL -->
   <div id="midOverBowlerModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-amber-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-white text-base flex items-center gap-1.5">
-          <span class="text-amber-400 font-black">Change Current Bowler</span>
-        </h3>
-        <button onclick="closeMidOverBowlerModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <h3 class="font-bold text-white text-base text-amber-400">Change Current Bowler</h3>
+        <button type="button" onclick="closeMidOverBowlerModal()" class="text-slate-400 hover:text-white">✕</button>
       </div>
 
       <p class="text-[11px] text-slate-300 leading-normal">
-        Select reason and incoming bowler. Remaining balls in the over will be credited to the replacement bowler.
+        Remaining balls in this over will be bowled by the replacement bowler.
       </p>
 
       <div class="space-y-2 text-xs">
@@ -560,9 +575,9 @@
       </div>
 
       <div class="pt-2 flex gap-2">
-        <button onclick="closeMidOverBowlerModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
-        <button onclick="confirmMidOverBowler()" class="w-1/2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
-          Confirm Bowler Change
+        <button type="button" onclick="closeMidOverBowlerModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button type="button" onclick="confirmMidOverBowler()" class="w-1/2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
+          Confirm Change
         </button>
       </div>
     </div>
@@ -571,12 +586,10 @@
   <!-- PIN AUTH MODAL -->
   <div id="pinAuthModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl text-center">
-      <div class="w-12 h-12 bg-emerald-950/80 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto text-xl text-emerald-400">
-        <i data-lucide="shield-check" class="w-6 h-6"></i>
-      </div>
+      <div class="text-3xl text-emerald-400">🛡️</div>
       <div>
         <h3 class="font-black text-white text-base">Enter Scorer PIN</h3>
-        <p class="text-xs text-slate-400 mt-0.5">Authentication required to record deliveries</p>
+        <p class="text-xs text-slate-400 mt-0.5">Default PIN is 1234</p>
       </div>
 
       <div>
@@ -585,20 +598,18 @@
       </div>
 
       <div class="grid grid-cols-2 gap-2 pt-1">
-        <button onclick="closePinModal()" class="py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
-        <button onclick="verifyScorerPin()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Unlock</button>
+        <button type="button" onclick="closePinModal()" class="py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button type="button" onclick="verifyScorerPin()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Unlock</button>
       </div>
     </div>
   </div>
 
-  <!-- DISMISSAL MODAL (OUT - CANNOT RETURN) -->
+  <!-- DISMISSAL MODAL (OUT) -->
   <div id="wicketModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-rose-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
-          <span class="text-rose-500 font-black">OUT (Dismissal)</span>
-        </h3>
-        <button onclick="closeWicketModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <h3 class="font-bold text-rose-500 text-sm">OUT (Dismissal)</h3>
+        <button type="button" onclick="closeWicketModal()" class="text-slate-400 hover:text-white">✕</button>
       </div>
 
       <p class="text-[11px] text-rose-300/80">Batsman is permanently out and cannot bat again in this innings.</p>
@@ -628,23 +639,21 @@
       </div>
 
       <div class="pt-2 flex gap-2">
-        <button onclick="closeWicketModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
-        <button onclick="confirmWicket()" class="w-1/2 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs">Confirm Out</button>
+        <button type="button" onclick="closeWicketModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button type="button" onclick="confirmWicket()" class="w-1/2 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs">Confirm Out</button>
       </div>
     </div>
   </div>
 
-  <!-- RETD MODAL (STEP-OUT - CAN RETURN LATER) -->
+  <!-- RETD MODAL -->
   <div id="retdModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-amber-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
-          <span class="text-amber-400 font-black">RETD (Tactical Step-Out)</span>
-        </h3>
-        <button onclick="closeRetdModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <h3 class="font-bold text-amber-400 text-sm">RETD (Tactical Step-Out)</h3>
+        <button type="button" onclick="closeRetdModal()" class="text-slate-400 hover:text-white">✕</button>
       </div>
 
-      <p class="text-[11px] text-amber-300/80">Batsman pauses now. <strong>Can return later</strong> to continue their ball count once others have played 6 balls.</p>
+      <p class="text-[11px] text-amber-300/80">Batsman pauses now. Can return later to continue their ball count once others have faced 6 balls.</p>
 
       <div class="space-y-2 text-xs">
         <div>
@@ -659,8 +668,8 @@
       </div>
 
       <div class="pt-2 flex gap-2">
-        <button onclick="closeRetdModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
-        <button onclick="confirmRetd()" class="w-1/2 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs">Confirm RETD</button>
+        <button type="button" onclick="closeRetdModal()" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button type="button" onclick="confirmRetd()" class="w-1/2 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs">Confirm RETD</button>
       </div>
     </div>
   </div>
@@ -682,13 +691,13 @@
         </p>
       </div>
 
-      <button onclick="confirmForcedPause()" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
+      <button type="button" onclick="confirmForcedPause()" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
         Confirm Substitution
       </button>
     </div>
   </div>
 
-  <!-- 2nd Innings Opening Lineup Modal -->
+  <!-- 2nd Innings Transition Modal -->
   <div id="inningsTransitionModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="border-b border-slate-800 pb-2">
@@ -712,47 +721,45 @@
       </div>
 
       <div class="pt-2">
-        <button onclick="confirmSecondInningsLineup()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">
+        <button type="button" onclick="confirmSecondInningsLineup()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">
           Start 2nd Innings
         </button>
       </div>
     </div>
   </div>
 
-  <!-- No Ball Interactive Modal (+0, +1, +2, +3, +4, +6) -->
+  <!-- No Ball Interactive Modal -->
   <div id="noBallModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-amber-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
-          <span class="text-amber-400 font-extrabold">No Ball Delivery (+1 penalty run)</span>
-        </h3>
+        <h3 class="font-bold text-white text-sm text-amber-400">No Ball Delivery (+1 penalty run)</h3>
         <p class="text-[11px] text-slate-400">Ball is not counted in over. Select runs scored off the bat:</p>
       </div>
 
       <div class="space-y-2 text-xs">
         <label class="text-slate-300 font-semibold block">Bat Runs on this No-Ball:</label>
         <div class="grid grid-cols-3 gap-2">
-          <button onclick="confirmNoBallRuns(0)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+0 runs</button>
-          <button onclick="confirmNoBallRuns(1)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+1 run</button>
-          <button onclick="confirmNoBallRuns(2)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+2 runs</button>
-          <button onclick="confirmNoBallRuns(3)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+3 runs</button>
-          <button onclick="confirmNoBallRuns(4)" class="py-2.5 rounded-xl bg-emerald-950 border border-emerald-500/50 font-bold text-emerald-300">+4 runs</button>
-          <button onclick="confirmNoBallRuns(6)" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black text-white">+6 runs</button>
+          <button type="button" onclick="confirmNoBallRuns(0)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+0 runs</button>
+          <button type="button" onclick="confirmNoBallRuns(1)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+1 run</button>
+          <button type="button" onclick="confirmNoBallRuns(2)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+2 runs</button>
+          <button type="button" onclick="confirmNoBallRuns(3)" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white border border-slate-700">+3 runs</button>
+          <button type="button" onclick="confirmNoBallRuns(4)" class="py-2.5 rounded-xl bg-emerald-950 border border-emerald-500/50 font-bold text-emerald-300">+4 runs</button>
+          <button type="button" onclick="confirmNoBallRuns(6)" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black text-white">+6 runs</button>
         </div>
       </div>
 
       <div class="pt-1 flex gap-2">
-        <button onclick="closeNoBallModal()" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button type="button" onclick="closeNoBallModal()" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- Mandatory Bowler Change Modal -->
+  <!-- Mandatory Bowler Over Change Modal -->
   <div id="bowlerModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="border-b border-slate-800 pb-2">
         <h3 class="font-bold text-white text-base">Over Complete!</h3>
-        <p class="text-xs text-emerald-400">6 legal balls bowled. Select the bowler for the next over.</p>
+        <p class="text-xs text-emerald-400">6 legal balls bowled. Select the bowler for next over.</p>
       </div>
 
       <div class="text-xs space-y-2">
@@ -761,21 +768,22 @@
       </div>
 
       <div class="pt-2">
-        <button onclick="confirmNewBowler()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">
+        <button type="button" onclick="confirmNewBowler()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg">
           Set Bowler & Start Next Over
         </button>
       </div>
     </div>
   </div>
 
-  <!-- APP SCRIPT & ENGINE -->
+  <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v30_pin_fixed';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v30_pin_fixed';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v32_voice_enabled';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v32_voice_enabled';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
     let isActionLocked = false;
+    let activeSpeechRecognition = null;
 
     let state = {
       team1: { name: 'Hawks', roster: ['Rohit', 'Virat', 'Surya', 'Hardik', 'Rinku', 'Axar'], captain: 'Rohit' },
@@ -852,13 +860,81 @@
       inn.currentOverDeliveries = [];
     }
 
+    // ========================================================
+    // VOICE SPEECH RECOGNITION FOR TEAM NAMES
+    // ========================================================
+    function startVoiceInput(targetInputId, micButtonId) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        alert("Speech Recognition is not supported by your browser. Please use Chrome on Android or desktop.");
+        return;
+      }
+
+      if (activeSpeechRecognition) {
+        try { activeSpeechRecognition.abort(); } catch (e) {}
+        activeSpeechRecognition = null;
+      }
+
+      const recognition = new SpeechRecognition();
+      activeSpeechRecognition = recognition;
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      const micBtn = document.getElementById(micButtonId);
+      const originalText = micBtn ? micBtn.innerHTML : '🎙️ Mic';
+
+      if (micBtn) {
+        micBtn.classList.add('mic-active');
+        micBtn.innerHTML = '🔴 Listening...';
+      }
+
+      recognition.onresult = function(event) {
+        const spokenText = event.results[0][0].transcript;
+        if (spokenText && spokenText.trim().length > 0) {
+          // Capitalize first letter of each word
+          const formatted = spokenText.trim().replace(/\b\w/g, c => c.toUpperCase());
+          const targetInput = document.getElementById(targetInputId);
+          if (targetInput) {
+            targetInput.value = formatted;
+            targetInput.dispatchEvent(new Event('change'));
+          }
+        }
+      };
+
+      recognition.onerror = function(event) {
+        console.warn("Speech recognition error:", event.error);
+        if (event.error === 'not-allowed') {
+          alert("Microphone permission denied. Please allow microphone access in your browser settings.");
+        }
+      };
+
+      recognition.onend = function() {
+        if (micBtn) {
+          micBtn.classList.remove('mic-active');
+          micBtn.innerHTML = originalText;
+        }
+        activeSpeechRecognition = null;
+      };
+
+      try {
+        recognition.start();
+      } catch (err) {
+        console.error("Failed to start speech recognition:", err);
+        if (micBtn) {
+          micBtn.classList.remove('mic-active');
+          micBtn.innerHTML = originalText;
+        }
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       loadState();
       if (!state.innings[0].batters || state.innings[0].batters.length === 0) {
         initInningStats(0, 0, 1, 0);
         initInningStats(1, 0, 1, 0);
       }
-      lucide.createIcons();
       updateOversDisplay();
       refreshLineupSelectors();
       applyRoleUI();
@@ -866,21 +942,24 @@
     });
 
     function saveState() {
-      localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function loadState() {
-      const saved = localStorage.getItem(MATCH_STORAGE_KEY);
-      if (saved) {
-        try {
-          state = JSON.parse(saved);
-        } catch (e) {
-          console.error("State parse error", e);
-        }
+      try {
+        localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error("Save state error:", e);
       }
     }
 
-    // Role & PIN Verification
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(MATCH_STORAGE_KEY);
+        if (saved) {
+          state = JSON.parse(saved);
+        }
+      } catch (e) {
+        console.error("Load state error:", e);
+      }
+    }
+
     function handleRoleToggle() {
       if (currentRole === 'scorer') {
         currentRole = 'viewer';
@@ -895,7 +974,7 @@
       document.getElementById('pinInputEntry').value = '';
       document.getElementById('pinErrorMsg').classList.add('hidden');
       document.getElementById('pinAuthModal').classList.remove('hidden');
-      setTimeout(() => document.getElementById('pinInputEntry').focus(), 100);
+      setTimeout(() => document.getElementById('pinInputEntry').focus(), 150);
     }
 
     function closePinModal() {
@@ -906,7 +985,7 @@
       const input = document.getElementById('pinInputEntry').value.trim();
       const expected = String(state.scorerPin || '1234').trim();
 
-      if (String(input) === expected) {
+      if (input === expected) {
         currentRole = 'scorer';
         closePinModal();
         applyRoleUI();
@@ -928,21 +1007,16 @@
       if (currentRole === 'scorer') {
         label.innerText = 'Scorer (Lock)';
         btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-emerald-950/80 text-emerald-300 border-emerald-500/50";
-        if (iconContainer) {
-          iconContainer.innerHTML = '<i data-lucide="unlock" class="w-3 h-3 text-emerald-300"></i>';
-        }
+        if (iconContainer) iconContainer.innerText = '🔓';
         banner.classList.add('hidden');
         controls.forEach(el => el.classList.remove('hidden'));
       } else {
         label.innerText = 'Viewer (Locked)';
         btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-300 border-slate-700";
-        if (iconContainer) {
-          iconContainer.innerHTML = '<i data-lucide="eye" class="w-3 h-3 text-slate-400"></i>';
-        }
+        if (iconContainer) iconContainer.innerText = '👁️';
         banner.classList.remove('hidden');
         controls.forEach(el => el.classList.add('hidden'));
       }
-      lucide.createIcons();
     }
 
     function recordStateForUndo() {
@@ -993,7 +1067,7 @@
     function recordDelivery(runs) {
       if (isActionLocked) return;
       isActionLocked = true;
-      setTimeout(() => { isActionLocked = false; }, 300);
+      setTimeout(() => { isActionLocked = false; }, 250);
 
       const inn = currentInning();
       if (inn.isInningComplete || state.matchWinner) return;
@@ -1029,7 +1103,7 @@
     function recordPenaltyMinus2() {
       if (isActionLocked) return;
       isActionLocked = true;
-      setTimeout(() => { isActionLocked = false; }, 300);
+      setTimeout(() => { isActionLocked = false; }, 250);
 
       const inn = currentInning();
       if (inn.isInningComplete || state.matchWinner) return;
@@ -1063,7 +1137,7 @@
     function recordInstantWide() {
       if (isActionLocked) return;
       isActionLocked = true;
-      setTimeout(() => { isActionLocked = false; }, 300);
+      setTimeout(() => { isActionLocked = false; }, 250);
 
       const inn = currentInning();
       if (inn.isInningComplete || state.matchWinner) return;
@@ -1178,7 +1252,7 @@
     function manualSwapStrike() {
       const inn = currentInning();
       if (inn.isLastManStanding) {
-        alert("Last Man Standing is active: solo batter always retains strike.");
+        alert("Last Man Standing is active: solo batter retains strike.");
         return;
       }
       recordStateForUndo();
@@ -1758,42 +1832,6 @@
       document.getElementById('setupScorerPin').value = state.scorerPin || '1234';
     }
 
-    function handleExcelUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-          const t1List = [];
-          const t2List = [];
-
-          rows.forEach((row, i) => {
-            if (i === 0 && row[0] && (row[0].toString().toLowerCase().includes('team') || row[0].toString().toLowerCase().includes('player'))) {
-              return;
-            }
-            if (row[0]) t1List.push(row[0].toString().trim());
-            if (row[1]) t2List.push(row[1].toString().trim());
-          });
-
-          if (t1List.length > 0) document.getElementById('setupT1Roster').value = t1List.join('\n');
-          if (t2List.length > 0) document.getElementById('setupT2Roster').value = t2List.join('\n');
-
-          refreshLineupSelectors();
-          alert(`Imported! Team 1: ${t1List.length} players, Team 2: ${t2List.length} players.`);
-        } catch (err) {
-          alert("Error parsing Excel file. Ensure simple two-column format.");
-          console.error(err);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
     function applySetupAndReset() {
       const t1Name = document.getElementById('setupTeam1Name').value.trim() || 'Team 1';
       const t2Name = document.getElementById('setupTeam2Name').value.trim() || 'Team 2';
@@ -1996,7 +2034,7 @@
         equationEl.classList.add('hidden');
       }
 
-      // Over Timeline Deliveries
+      // Over Timeline
       const timeline = document.getElementById('thisOverTimeline');
       if (inn.currentOverDeliveries.length === 0) {
         timeline.innerHTML = '<span class="text-[11px] text-slate-500 font-bold mr-1 uppercase tracking-wider shrink-0">This Over:</span><span class="text-xs text-slate-600 italic">Ready for 1st ball</span>';
@@ -2012,7 +2050,7 @@
         });
       }
 
-      // Striker Rendering
+      // Striker
       const striker = inn.batters[inn.strikerIndex];
       const nonStriker = inn.batters[inn.nonStrikerIndex];
 
@@ -2035,7 +2073,7 @@
         }
       }
 
-      // Non-Striker Rendering
+      // Non-Striker
       const nonStrikerRow = document.getElementById('nonStrikerRow');
       const nsPauseContainer = document.getElementById('nonStrikerCaptainPauseContainer');
       const chooseBtn = document.getElementById('chooseBatterBtn');
@@ -2076,7 +2114,7 @@
         }
       }
 
-      // Bowler Rendering
+      // Bowler
       const bowler = inn.bowlers[inn.currentBowlerIndex];
       if (bowler) {
         document.getElementById('currentBowlerName').innerText = getFormattedPlayerName(bowler.name, inn.bowlingTeam);
@@ -2193,7 +2231,6 @@
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
-    // Complete WhatsApp Scorecard Export
     function copyMatchSummary() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
