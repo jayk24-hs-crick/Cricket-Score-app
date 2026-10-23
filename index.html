@@ -600,7 +600,7 @@ Chahal</textarea>
       <div class="text-3xl text-emerald-400">🛡️</div>
       <div>
         <h3 class="font-black text-white text-base">Enter Scorer PIN</h3>
-        <p class="text-xs text-slate-400 mt-0.5">Default PIN is 1234</p>
+        <p class="text-xs text-slate-400 mt-0.5">Authentication required to edit scoreboard</p>
       </div>
 
       <div>
@@ -788,8 +788,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v33_voice_roster_enabled';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v33_voice_roster_enabled';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v34_pin_text_cleaned';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v34_pin_text_cleaned';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -871,9 +871,6 @@ Chahal</textarea>
       inn.currentOverDeliveries = [];
     }
 
-    // ========================================================
-    // VOICE SPEECH RECOGNITION (TEAMS & PLAYER ROSTER)
-    // ========================================================
     function startVoiceInput(targetElementId, micButtonId, isRoster = false) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -908,12 +905,10 @@ Chahal</textarea>
           if (!targetEl) return;
 
           if (!isRoster) {
-            // Single team name: format Title Case
             const formatted = spokenText.trim().replace(/\b\w/g, c => c.toUpperCase());
             targetEl.value = formatted;
             targetEl.dispatchEvent(new Event('change'));
           } else {
-            // Player Roster: handles single name or multiple names ("Rohit, Virat and Hardik")
             let names = spokenText
               .replace(/\band\b/gi, ',')
               .split(',')
@@ -2261,6 +2256,7 @@ Chahal</textarea>
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
+    // Complete WhatsApp Scorecard Export
     function copyMatchSummary() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
