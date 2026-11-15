@@ -917,8 +917,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v41_umpires_and_auto_archive';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v41_umpires_and_auto_archive';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v42_no_pin_in_setup_alert';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v42_no_pin_in_setup_alert';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -1003,7 +1003,6 @@ Chahal</textarea>
       inn.currentOverDeliveries = [];
     }
 
-    // Voice recognition for team names, umpires, and rosters
     function startVoiceInput(targetElementId, micButtonId, isRoster = false) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -1099,7 +1098,6 @@ Chahal</textarea>
         initInningStats(0, 0, 1, 0);
         initInningStats(1, 0, 1, 0);
       }
-      // Sync live state to history immediately on page load/refresh so nothing is ever lost
       autoSyncLiveMatchToHistory();
       updateOversDisplay();
       refreshLineupSelectors();
@@ -1107,7 +1105,6 @@ Chahal</textarea>
       renderAll();
     });
 
-    // Save active match + automatically keep History archive synced on every single action/refresh
     function saveState() {
       try {
         localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(state));
@@ -1587,7 +1584,6 @@ Chahal</textarea>
       openRetdModal(role);
     }
 
-    // Enforces Cage Rules: Outgoing batter must have faced >= 6 balls; Incoming batter follows strict bench rotation
     function openChooseBatterModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1843,7 +1839,6 @@ Chahal</textarea>
       processBallAftermath();
     }
 
-    // Enforces 6-ball minimum rule before tactical RETD step-out
     function openRetdModal(presetRole = null) {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -2174,6 +2169,7 @@ Chahal</textarea>
       }
     }
 
+    // Cleaned: Does NOT display the PIN in the confirmation alert
     function applySetupAndReset() {
       const t1Name = document.getElementById('setupTeam1Name').value.trim() || 'Team 1';
       const t2Name = document.getElementById('setupTeam2Name').value.trim() || 'Team 2';
@@ -2223,10 +2219,9 @@ Chahal</textarea>
       saveState();
       switchTab('match');
       renderAll();
-      alert(`Setup applied! Match started and auto-archived.`);
+      alert("Setup applied! Match started and auto-archived.");
     }
 
-    // Compute End-of-Match Awards across both innings
     function computeMatchAwards() {
       const allBatters = [];
       const allBowlers = [];
@@ -2401,7 +2396,6 @@ Chahal</textarea>
       }
     }
 
-    // Explicit Save / Snapshot to History
     function archiveCurrentMatch(isQuickSnapshot = false) {
       autoSyncLiveMatchToHistory();
       const timeStr = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -2448,12 +2442,10 @@ Chahal</textarea>
             ${umpText ? `<div class="text-[10px] text-slate-400">🙏 ${umpText}</div>` : ''}
 
             <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2">
-              <!-- Option 1: Load & Resume/Restart Scoring -->
               <button type="button" onclick="resumeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black flex items-center justify-center gap-1 shadow transition">
                 ▶️ Load & Resume
               </button>
 
-              <!-- Option 2: Load Read-Only Scorecard & Awards for Analysis -->
               <button type="button" onclick="analyzeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold flex items-center justify-center gap-1 transition">
                 📋 View Scorecard
               </button>
@@ -2479,7 +2471,6 @@ Chahal</textarea>
 
       if (confirm(`Load "${record.team1Name} vs ${record.team2Name}" (${record.result}) into the active scoreboard?`)) {
         state = JSON.parse(JSON.stringify(record.fullState));
-        // If loading a completed match to restart/continue, clear winner lock if user wants to resume play
         if (state.matchWinner && confirm("This match was marked completed. Do you want to reopen scoring to continue/restart from this point?")) {
           state.matchWinner = null;
           state.matchResultText = null;
@@ -2925,7 +2916,6 @@ Chahal</textarea>
         text += generateInningScorecardText(inn2, 2);
       }
 
-      // Special Thanks to Straight & Leg Umpires
       const straightUmp = state.umpires?.straight?.trim();
       const legUmp = state.umpires?.leg?.trim();
       text += `🙏 *MATCH OFFICIALS & SPECIAL THANKS:*\n`;
