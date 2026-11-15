@@ -281,6 +281,13 @@
             ↩ Undo
           </button>
         </div>
+
+        <!-- Quick Mid-Match Safety Checkpoint Button -->
+        <div class="pt-1 border-t border-slate-800/80">
+          <button type="button" onclick="archiveCurrentMatch(true)" class="w-full py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-emerald-400 text-[11px] font-bold flex items-center justify-center gap-1.5 transition">
+            💾 Quick Checkpoint Save (Backup to History)
+          </button>
+        </div>
       </div>
     </div>
 
@@ -386,7 +393,7 @@
       </div>
 
       <div class="pt-2">
-        <button type="button" onclick="archiveCurrentMatch()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs flex items-center justify-center gap-1.5 shadow-lg">
+        <button type="button" onclick="archiveCurrentMatch(false)" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs flex items-center justify-center gap-1.5 shadow-lg">
           💾 Save Match to History
         </button>
       </div>
@@ -396,8 +403,8 @@
     <div id="tabHistory" class="hidden space-y-3">
       <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
         <div>
-          <h3 class="font-bold text-white text-sm">Past Matches Archive</h3>
-          <p class="text-[11px] text-slate-400">Saved on this device</p>
+          <h3 class="font-bold text-white text-sm">Saved Matches & Checkpoints</h3>
+          <p class="text-[11px] text-slate-400">Resume live play or open past scorecards for analysis</p>
         </div>
         <button type="button" onclick="clearHistory()" class="scorer-control text-[11px] text-rose-400 hover:underline">
           Clear All
@@ -795,8 +802,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v38_dismissal_fielder_credits';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v38_dismissal_fielder_credits';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v39_history_resume_and_analyze';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v39_history_resume_and_analyze';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -804,6 +811,7 @@ Chahal</textarea>
     let activeSpeechRecognition = null;
 
     let state = {
+      matchId: 'match_' + Date.now(),
       team1: { name: 'Hawks', roster: ['Rohit', 'Virat', 'Surya', 'Hardik', 'Rinku', 'Axar'], captain: 'Rohit' },
       team2: { name: 'Tigers', roster: ['Bumrah', 'Shami', 'Kuldeep', 'Siraj', 'Arshdeep', 'Chahal'], captain: 'Bumrah' },
       maxOvers: 10,
@@ -964,6 +972,9 @@ Chahal</textarea>
 
     window.addEventListener('DOMContentLoaded', () => {
       loadState();
+      if (!state.matchId) {
+        state.matchId = 'match_' + Date.now();
+      }
       if (!state.innings[0].batters || state.innings[0].batters.length === 0) {
         initInningStats(0, 0, 1, 0);
         initInningStats(1, 0, 1, 0);
@@ -1409,7 +1420,6 @@ Chahal</textarea>
       openRetdModal(role);
     }
 
-    // Allows choosing ANY available batsman from the full squad list
     function openChooseBatterModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1486,7 +1496,6 @@ Chahal</textarea>
       renderAll();
     }
 
-    // Updated Wicket Modal: Populates Fielder/Keeper dropdown from Bowling Team
     function openWicketModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1496,7 +1505,6 @@ Chahal</textarea>
         ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}">${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker)</option>` : ''}
       `;
 
-      // Reset dismissal type to Bowled and hide fielder selector initially
       document.getElementById('wicketDismissalType').value = 'Bowled';
       toggleWicketFielderUI();
 
@@ -1545,7 +1553,6 @@ Chahal</textarea>
           select.appendChild(directOpt);
         }
 
-        // Populate with bowling team players
         const bowlingRoster = (inn.bowlingTeam === state.team1.name) ? state.team1.roster : state.team2.roster;
         const currentBowlerName = inn.bowlers[inn.currentBowlerIndex]?.name;
 
@@ -1581,7 +1588,6 @@ Chahal</textarea>
         inn.currentOverDeliveries = [];
       }
 
-      // Format detailed cricket dismissal text crediting bowler and fielder/keeper
       let formattedDismissal = manner;
       if (manner === 'Bowled') {
         formattedDismissal = `b ${bowler.name}`;
@@ -1608,7 +1614,6 @@ Chahal</textarea>
       batterOut.balls += 1;
       batterOut.dismissalText = formattedDismissal;
 
-      // Retired Hurt does not credit a wicket to the bowler or team wicket count
       if (manner !== 'Retired Hurt') {
         inn.wickets += 1;
         if (manner !== 'Run Out') {
@@ -1986,6 +1991,7 @@ Chahal</textarea>
       const t1Captain = document.getElementById('setupT1Captain').value || t1Roster[0];
       const t2Captain = document.getElementById('setupT2Captain').value || t2Roster[0];
 
+      state.matchId = 'match_' + Date.now();
       state.team1 = { name: t1Name, roster: t1Roster, captain: t1Captain };
       state.team2 = { name: t2Name, roster: t2Roster, captain: t2Captain };
       state.maxOvers = overs;
@@ -2008,56 +2014,138 @@ Chahal</textarea>
       alert(`Setup applied! Match PIN set to ${pin}`);
     }
 
-    function archiveCurrentMatch() {
+    // Save or Update Match Checkpoint in History
+    function archiveCurrentMatch(isQuickCheckpoint = false) {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
+      if (!state.matchId) state.matchId = 'match_' + Date.now();
+
+      const statusLabel = state.matchResultText 
+        ? state.matchResultText 
+        : `In Progress (${state.currentInning === 1 ? '1st' : '2nd'} Inn - ${formatOvers(currentInning().legalBalls)} ov)`;
 
       const matchRecord = {
-        id: 'match_' + Date.now(),
+        id: state.matchId,
         date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+        time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
         team1Name: state.team1.name,
         team2Name: state.team2.name,
         t1Score: `${inn1.totalRuns}/${inn1.wickets} (${formatOvers(inn1.legalBalls)})`,
         t2Score: `${inn2.totalRuns}/${inn2.wickets} (${formatOvers(inn2.legalBalls)})`,
-        result: state.matchResultText || "Match Finished",
-        winner: state.matchWinner || "Completed",
+        result: statusLabel,
+        isCompleted: Boolean(state.matchWinner),
+        winner: state.matchWinner || "In Progress",
         fullState: JSON.parse(JSON.stringify(state))
       };
 
       const existingHistory = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
-      existingHistory.unshift(matchRecord);
+      const existingIndex = existingHistory.findIndex(item => item.id === state.matchId);
+
+      if (existingIndex !== -1) {
+        // Update existing checkpoint so history doesn't get cluttered with duplicates
+        existingHistory[existingIndex] = matchRecord;
+      } else {
+        existingHistory.unshift(matchRecord);
+      }
+
       localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(existingHistory));
 
-      alert("Match saved to history archive!");
-      renderHistory();
-      switchTab('history');
+      if (isQuickCheckpoint) {
+        alert(`Checkpoint saved at ${matchRecord.time}! You can safely resume this match anytime from History.`);
+      } else {
+        alert("Match saved to history archive!");
+        renderHistory();
+        switchTab('history');
+      }
     }
 
+    // Render History with Option 1 (Resume Live Play) & Option 2 (Analyze Scorecard)
     function renderHistory() {
       const container = document.getElementById('historyListContainer');
       const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
 
       if (history.length === 0) {
-        container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-900 rounded-xl border border-slate-800">No archived matches found.</div>`;
+        container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-900 rounded-xl border border-slate-800">No saved matches or checkpoints found.</div>`;
         return;
       }
 
-      container.innerHTML = history.map((m) => `
-        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1.5 shadow">
+      container.innerHTML = history.map((m, index) => `
+        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2.5 shadow">
           <div class="flex justify-between items-center text-[10px] text-slate-400">
-            <span>${m.date}</span>
-            <span class="font-bold text-amber-400">🏆 ${m.result}</span>
+            <span>${m.date} ${m.time ? '· ' + m.time : ''}</span>
+            <span class="font-bold ${m.isCompleted ? 'text-amber-400' : 'text-emerald-400'}">
+              ${m.isCompleted ? '🏆' : '⏳'} ${m.result}
+            </span>
           </div>
+          
           <div class="flex justify-between items-center text-xs font-bold text-white">
             <span>${m.team1Name}: <span class="text-emerald-400">${m.t1Score}</span></span>
-            <span>vs</span>
+            <span class="text-slate-500">vs</span>
             <span>${m.team2Name}: <span class="text-emerald-400">${m.t2Score}</span></span>
+          </div>
+
+          <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2">
+            <!-- Option 1: Retrieve & Continue Scoring -->
+            <button type="button" onclick="resumeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black flex items-center justify-center gap-1 shadow transition">
+              ▶️ Resume Match
+            </button>
+
+            <!-- Option 2: Load Read-Only Scorecard for Later Analysis -->
+            <button type="button" onclick="analyzeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold flex items-center justify-center gap-1 transition">
+              📋 Analyze Scorecard
+            </button>
           </div>
         </div>
       `).join('');
     }
 
+    // Option 1: Retrieve match state and continue live scoring
+    function resumeArchivedMatch(index) {
+      if (currentRole !== 'scorer') {
+        alert("Unlock Scorer Mode with your PIN first to resume and edit a live match.");
+        openPinModal();
+        return;
+      }
+
+      const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+      const record = history[index];
+      if (!record || !record.fullState) {
+        alert("Match checkpoint data not available.");
+        return;
+      }
+
+      if (confirm(`Resume "${record.team1Name} vs ${record.team2Name}" and continue scoring from where it left off?`)) {
+        state = JSON.parse(JSON.stringify(record.fullState));
+        saveState();
+        applyRoleUI();
+        renderAll();
+        switchTab('match');
+      }
+    }
+
+    // Option 2: Load match on a later date in Viewer Mode for safe analysis
+    function analyzeArchivedMatch(index) {
+      const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+      const record = history[index];
+      if (!record || !record.fullState) {
+        alert("Full scorecard data not available for this record.");
+        return;
+      }
+
+      state = JSON.parse(JSON.stringify(record.fullState));
+      // Switch to Viewer mode automatically so historical data cannot be accidentally altered during analysis
+      currentRole = 'viewer';
+      saveState();
+      applyRoleUI();
+      renderAll();
+      switchTab('scorecard');
+    }
+
     function clearHistory() {
+      if (currentRole !== 'scorer') {
+        alert("Unlock Scorer Mode with PIN first to clear archived records.");
+        return;
+      }
       if (confirm("Are you sure you want to clear all archived match records?")) {
         localStorage.removeItem(HISTORY_STORAGE_KEY);
         renderHistory();
@@ -2069,7 +2157,7 @@ Chahal</textarea>
         alert("Unlock Scorer Mode with PIN first to reset or start a new match.");
         return;
       }
-      if (confirm("Reset current match data? Make sure you archive first if needed.")) {
+      if (confirm("Reset current match data? Make sure you save a checkpoint to History first if needed.")) {
         localStorage.removeItem(MATCH_STORAGE_KEY);
         location.reload();
       }
@@ -2339,6 +2427,8 @@ Chahal</textarea>
             </tr>
           `;
         }).join('');
+      } else {
+        document.getElementById('t2InningsContainer').classList.add('hidden');
       }
     }
 
