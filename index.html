@@ -61,7 +61,6 @@
     <button type="button" onclick="switchTab('history')" id="navHistory" class="py-2.5 px-3 transition flex items-center gap-1.5">
       📁 History
     </button>
-    <!-- Setup Tab Button: Dynamically disabled in Viewer mode -->
     <button type="button" onclick="switchTab('setup')" id="navSetup" class="py-2.5 px-3 transition flex items-center gap-1.5 opacity-40 cursor-not-allowed">
       <span>🔒</span> Setup
     </button>
@@ -282,10 +281,11 @@
           </button>
         </div>
 
-        <!-- Quick Mid-Match Safety Checkpoint Button -->
-        <div class="pt-1 border-t border-slate-800/80">
-          <button type="button" onclick="archiveCurrentMatch(true)" class="w-full py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-emerald-400 text-[11px] font-bold flex items-center justify-center gap-1.5 transition">
-            💾 Quick Checkpoint Save (Backup to History)
+        <!-- Auto-Archive Status Indicator & Manual Checkpoint -->
+        <div class="pt-1 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-emerald-400/90 px-1">
+          <span class="flex items-center gap-1">🟢 Auto-saved to History on every ball</span>
+          <button type="button" onclick="archiveCurrentMatch(true)" class="underline hover:text-emerald-300 font-bold">
+            Force Snapshot
           </button>
         </div>
       </div>
@@ -392,7 +392,7 @@
         </div>
       </div>
 
-      <!-- POST-MATCH AWARDS & HIGHLIGHTS SECTION (Displayed automatically at end of match before archiving) -->
+      <!-- POST-MATCH AWARDS & HIGHLIGHTS SECTION -->
       <div id="matchAwardsContainer" class="hidden bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 rounded-xl border border-amber-500/50 p-3.5 shadow-xl space-y-2.5">
         <div class="flex items-center justify-between border-b border-slate-800 pb-2">
           <div class="flex items-center gap-1.5">
@@ -453,6 +453,27 @@
         </div>
       </div>
 
+      <!-- MATCH OFFICIALS & SPECIAL THANKS CARD -->
+      <div id="scorecardUmpiresCard" class="bg-slate-900 rounded-xl border border-slate-800 p-3.5 shadow-md space-y-2">
+        <div class="flex items-center gap-1.5 border-b border-slate-800 pb-1.5">
+          <span class="text-sm">🙏</span>
+          <h4 class="font-bold text-emerald-400 text-xs uppercase tracking-wider">Match Officials & Special Thanks</h4>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+            <span class="text-[10px] text-slate-400 block">Straight Umpire</span>
+            <span class="font-bold text-white" id="displayStraightUmpire">Not Assigned</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+            <span class="text-[10px] text-slate-400 block">Leg Umpire</span>
+            <span class="font-bold text-white" id="displayLegUmpire">Not Assigned</span>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-300 italic leading-relaxed" id="umpireThanksMessage">
+          Special thanks to our match umpires for regulating the game fairly and keeping the spirit of cage cricket alive!
+        </p>
+      </div>
+
       <!-- Archive Match Button -->
       <div class="pt-1">
         <button type="button" onclick="archiveCurrentMatch(false)" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs flex items-center justify-center gap-1.5 shadow-lg">
@@ -465,8 +486,8 @@
     <div id="tabHistory" class="hidden space-y-3">
       <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
         <div>
-          <h3 class="font-bold text-white text-sm">Saved Matches & Checkpoints</h3>
-          <p class="text-[11px] text-slate-400">Resume live play or open past scorecards for analysis</p>
+          <h3 class="font-bold text-white text-sm">Saved & Auto-Archived Matches</h3>
+          <p class="text-[11px] text-slate-400">Load any match to resume scoring, restart, or analyze</p>
         </div>
         <button type="button" onclick="clearHistory()" class="scorer-control text-[11px] text-rose-400 hover:underline">
           Clear All
@@ -476,7 +497,7 @@
       <div id="historyListContainer" class="space-y-2.5"></div>
     </div>
 
-    <!-- ================= TAB: SETUP (VOICE INPUT FOR TEAMS & PLAYERS) ================= -->
+    <!-- ================= TAB: SETUP (VOICE INPUT FOR TEAMS, UMPIRES & PLAYERS) ================= -->
     <div id="tabSetup" class="hidden space-y-4">
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -523,6 +544,38 @@
           <div>
             <label class="text-xs text-amber-400 font-bold block mb-1">Scorer PIN (4 Digits)</label>
             <input type="password" id="setupScorerPin" inputmode="numeric" pattern="[0-9]*" maxlength="4" value="1234" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono font-bold tracking-widest text-center">
+          </div>
+        </div>
+      </div>
+
+      <!-- Match Officials (Umpires) Section -->
+      <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="font-bold text-white text-sm">Match Officials (Umpires)</h3>
+          <span class="text-[10px] text-slate-400">Credited in Scorecard & Report</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Straight Umpire -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs text-slate-400">Straight Umpire</label>
+              <button type="button" id="micBtnUmp1" onclick="startVoiceInput('setupStraightUmpire', 'micBtnUmp1', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Straight Umpire">
+                🎙️ Mic
+              </button>
+            </div>
+            <input type="text" id="setupStraightUmpire" placeholder="e.g., Suresh" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+
+          <!-- Leg Umpire -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs text-slate-400">Leg Umpire</label>
+              <button type="button" id="micBtnUmp2" onclick="startVoiceInput('setupLegUmpire', 'micBtnUmp2', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Leg Umpire">
+                🎙️ Mic
+              </button>
+            </div>
+            <input type="text" id="setupLegUmpire" placeholder="e.g., Ramesh" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
           </div>
         </div>
       </div>
@@ -597,7 +650,7 @@ Chahal</textarea>
 
   <!-- ================= MODALS ================= -->
 
-  <!-- CHOOSE BATSMAN MODAL (FULL SQUAD LIST) -->
+  <!-- CHOOSE BATSMAN MODAL (CAGE RULES ENFORCED) -->
   <div id="chooseBatterModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -606,17 +659,17 @@ Chahal</textarea>
       </div>
 
       <p class="text-[11px] text-slate-400 leading-normal">
-        Select any available squad player to take the crease (excluding batters already on pitch or permanently out).
+        Batters can only be substituted after facing at least 6 balls. Paused players cannot return until all teammates on the bench have faced 6+ balls or are out.
       </p>
 
       <div class="space-y-2.5 text-xs">
         <div>
-          <label class="text-slate-300 font-semibold block mb-1">Which position is changing?</label>
+          <label class="text-slate-300 font-semibold block mb-1">Which position is changing? (Must have 6+ balls)</label>
           <select id="chooseBatterPositionSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold text-xs"></select>
         </div>
 
         <div>
-          <label class="text-slate-300 font-semibold block mb-1">Select Player from Squad:</label>
+          <label class="text-slate-300 font-semibold block mb-1">Select Eligible Incoming Player:</label>
           <select id="chooseBatterIncomingSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-300 font-semibold text-xs"></select>
         </div>
       </div>
@@ -740,11 +793,11 @@ Chahal</textarea>
         <button type="button" onclick="closeRetdModal()" class="text-slate-400 hover:text-white">✕</button>
       </div>
 
-      <p class="text-[11px] text-amber-300/80">Batsman pauses now. Can return later to continue their ball count once others have faced 6 balls.</p>
+      <p class="text-[11px] text-amber-300/80">Batsman pauses after 6+ balls. Can return later once teammates have faced 6 balls.</p>
 
       <div class="space-y-2 text-xs">
         <div>
-          <label class="text-slate-400 block mb-1">Which Batter is Stepping Out?</label>
+          <label class="text-slate-400 block mb-1">Which Batter is Stepping Out? (6+ balls required)</label>
           <select id="retdTargetBatterSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold"></select>
         </div>
 
@@ -864,8 +917,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v40_post_match_awards';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v40_post_match_awards';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v41_umpires_and_auto_archive';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v41_umpires_and_auto_archive';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -876,6 +929,7 @@ Chahal</textarea>
       matchId: 'match_' + Date.now(),
       team1: { name: 'Hawks', roster: ['Rohit', 'Virat', 'Surya', 'Hardik', 'Rinku', 'Axar'], captain: 'Rohit' },
       team2: { name: 'Tigers', roster: ['Bumrah', 'Shami', 'Kuldeep', 'Siraj', 'Arshdeep', 'Chahal'], captain: 'Bumrah' },
+      umpires: { straight: '', leg: '' },
       maxOvers: 10,
       currentInning: 1,
       matchWinner: null,
@@ -949,7 +1003,7 @@ Chahal</textarea>
       inn.currentOverDeliveries = [];
     }
 
-    // Voice recognition for team names and roster
+    // Voice recognition for team names, umpires, and rosters
     function startVoiceInput(targetElementId, micButtonId, isRoster = false) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -1038,21 +1092,71 @@ Chahal</textarea>
       if (!state.matchId) {
         state.matchId = 'match_' + Date.now();
       }
+      if (!state.umpires) {
+        state.umpires = { straight: '', leg: '' };
+      }
       if (!state.innings[0].batters || state.innings[0].batters.length === 0) {
         initInningStats(0, 0, 1, 0);
         initInningStats(1, 0, 1, 0);
       }
+      // Sync live state to history immediately on page load/refresh so nothing is ever lost
+      autoSyncLiveMatchToHistory();
       updateOversDisplay();
       refreshLineupSelectors();
       applyRoleUI();
       renderAll();
     });
 
+    // Save active match + automatically keep History archive synced on every single action/refresh
     function saveState() {
       try {
         localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(state));
+        autoSyncLiveMatchToHistory();
       } catch (e) {
         console.error("Save state error:", e);
+      }
+    }
+
+    function autoSyncLiveMatchToHistory() {
+      try {
+        const inn1 = state.innings[0];
+        const inn2 = state.innings[1];
+        if (!state.matchId) state.matchId = 'match_' + Date.now();
+
+        const statusLabel = state.matchResultText 
+          ? state.matchResultText 
+          : `In Progress (${state.currentInning === 1 ? '1st' : '2nd'} Inn - ${formatOvers(currentInning().legalBalls)} ov)`;
+
+        const awards = state.matchWinner ? computeMatchAwards() : null;
+
+        const matchRecord = {
+          id: state.matchId,
+          date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+          time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+          team1Name: state.team1.name,
+          team2Name: state.team2.name,
+          t1Score: `${inn1.totalRuns}/${inn1.wickets} (${formatOvers(inn1.legalBalls)})`,
+          t2Score: `${inn2.totalRuns}/${inn2.wickets} (${formatOvers(inn2.legalBalls)})`,
+          umpires: state.umpires || { straight: '', leg: '' },
+          result: statusLabel,
+          isCompleted: Boolean(state.matchWinner),
+          winner: state.matchWinner || "In Progress",
+          awards: awards,
+          fullState: JSON.parse(JSON.stringify(state))
+        };
+
+        const existingHistory = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+        const existingIndex = existingHistory.findIndex(item => item.id === state.matchId);
+
+        if (existingIndex !== -1) {
+          existingHistory[existingIndex] = matchRecord;
+        } else {
+          existingHistory.unshift(matchRecord);
+        }
+
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(existingHistory));
+      } catch (e) {
+        console.error("Auto-sync history error:", e);
       }
     }
 
@@ -1483,37 +1587,52 @@ Chahal</textarea>
       openRetdModal(role);
     }
 
+    // Enforces Cage Rules: Outgoing batter must have faced >= 6 balls; Incoming batter follows strict bench rotation
     function openChooseBatterModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
 
+      const striker = inn.batters[inn.strikerIndex];
+      const nonStriker = !inn.isLastManStanding ? inn.batters[inn.nonStrikerIndex] : null;
+
       const posSelect = document.getElementById('chooseBatterPositionSelect');
-      posSelect.innerHTML = `
-        <option value="striker">Striker (${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
-        ${!inn.isLastManStanding ? `<option value="nonStriker">Non-Striker (${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} - Faced ${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
-      `;
+      posSelect.innerHTML = '';
+
+      if (striker && (striker.stretchBalls >= 6 || striker.isExemptFromLimit)) {
+        const opt = document.createElement('option');
+        opt.value = 'striker';
+        opt.innerText = `Striker (${getFormattedPlayerName(striker.name, inn.battingTeam)} - Faced ${striker.stretchBalls}b)`;
+        posSelect.appendChild(opt);
+      }
+
+      if (nonStriker && (nonStriker.stretchBalls >= 6 || nonStriker.isExemptFromLimit)) {
+        const opt = document.createElement('option');
+        opt.value = 'nonStriker';
+        opt.innerText = `Non-Striker (${getFormattedPlayerName(nonStriker.name, inn.battingTeam)} - Faced ${nonStriker.stretchBalls}b)`;
+        posSelect.appendChild(opt);
+      }
+
+      if (posSelect.options.length === 0) {
+        alert("Cage Rule: Neither active batter has completed 6 balls yet. Batters cannot be pulled out before facing 6 legal balls.");
+        return;
+      }
 
       const incomingSelect = document.getElementById('chooseBatterIncomingSelect');
       incomingSelect.innerHTML = '';
 
-      const squadBench = [];
-      inn.batters.forEach((b, idx) => {
-        if (b.isOut) return;
-        if (idx === inn.strikerIndex || idx === inn.nonStrikerIndex) return;
-        squadBench.push({ ...b, originalIndex: idx });
-      });
+      const eligible = getEligibleBatters();
 
-      if (squadBench.length === 0) {
-        alert("No other players available on the bench (all remaining squad members are either batting or out).");
+      if (eligible.length === 0) {
+        alert("No eligible batsman available on the bench under current rotation rules.");
         return;
       }
 
-      squadBench.forEach(b => {
+      eligible.forEach(b => {
         const opt = document.createElement('option');
         opt.value = b.originalIndex;
         let badge = '';
         if (b.isExemptFromLimit) badge = ' (∞ Unlimited Spell)';
-        else if (b.isPaused) badge = ` (Paused at ${b.stretchBalls}/12b - Can Return)`;
+        else if (b.isPaused) badge = ` (Resumes at ${b.stretchBalls}/12b)`;
         else badge = ` (Fresh - ${b.stretchBalls}/12b)`;
         
         opt.innerText = `${getFormattedPlayerName(b.name, inn.battingTeam)}${badge}`;
@@ -1724,18 +1843,36 @@ Chahal</textarea>
       processBallAftermath();
     }
 
+    // Enforces 6-ball minimum rule before tactical RETD step-out
     function openRetdModal(presetRole = null) {
       if (state.matchWinner) return;
       const inn = currentInning();
       const targetSelect = document.getElementById('retdTargetBatterSelect');
-      
-      let strikerSelected = (presetRole === 'nonStriker') ? '' : 'selected';
-      let nonStrikerSelected = (presetRole === 'nonStriker') ? 'selected' : '';
+      targetSelect.innerHTML = '';
 
-      targetSelect.innerHTML = `
-        <option value="${inn.strikerIndex}" ${strikerSelected}>${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} (Striker - Faced ${inn.batters[inn.strikerIndex].stretchBalls}b)</option>
-        ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}" ${nonStrikerSelected}>${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker - Faced ${inn.batters[inn.nonStrikerIndex].stretchBalls}b)</option>` : ''}
-      `;
+      const striker = inn.batters[inn.strikerIndex];
+      const nonStriker = !inn.isLastManStanding ? inn.batters[inn.nonStrikerIndex] : null;
+
+      if (striker && (striker.stretchBalls >= 6 || striker.isExemptFromLimit)) {
+        const opt = document.createElement('option');
+        opt.value = inn.strikerIndex;
+        if (presetRole !== 'nonStriker') opt.selected = true;
+        opt.innerText = `${getFormattedPlayerName(striker.name, inn.battingTeam)} (Striker - Faced ${striker.stretchBalls}b)`;
+        targetSelect.appendChild(opt);
+      }
+
+      if (nonStriker && (nonStriker.stretchBalls >= 6 || nonStriker.isExemptFromLimit)) {
+        const opt = document.createElement('option');
+        opt.value = inn.nonStrikerIndex;
+        if (presetRole === 'nonStriker') opt.selected = true;
+        opt.innerText = `${getFormattedPlayerName(nonStriker.name, inn.battingTeam)} (Non-Striker - Faced ${nonStriker.stretchBalls}b)`;
+        targetSelect.appendChild(opt);
+      }
+
+      if (targetSelect.options.length === 0) {
+        alert("Cage Rule: Batters cannot be tactically retired (RETD) before completing 6 balls. If injured, use OUT -> Retired Hurt.");
+        return;
+      }
 
       const nextSelect = document.getElementById('retdNextBatterSelect');
       nextSelect.innerHTML = '';
@@ -2031,6 +2168,10 @@ Chahal</textarea>
       t2Bowler.innerHTML = t2List.map((name, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${name}</option>`).join('');
 
       document.getElementById('setupScorerPin').value = state.scorerPin || '1234';
+      if (state.umpires) {
+        document.getElementById('setupStraightUmpire').value = state.umpires.straight || '';
+        document.getElementById('setupLegUmpire').value = state.umpires.leg || '';
+      }
     }
 
     function applySetupAndReset() {
@@ -2038,6 +2179,8 @@ Chahal</textarea>
       const t2Name = document.getElementById('setupTeam2Name').value.trim() || 'Team 2';
       const overs = parseInt(document.getElementById('setupMaxOvers').value) || 10;
       const pin = document.getElementById('setupScorerPin').value.trim() || '1234';
+      const straightUmp = document.getElementById('setupStraightUmpire').value.trim();
+      const legUmp = document.getElementById('setupLegUmpire').value.trim();
 
       const t1Roster = document.getElementById('setupT1Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
       const t2Roster = document.getElementById('setupT2Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
@@ -2062,6 +2205,7 @@ Chahal</textarea>
       state.matchId = 'match_' + Date.now();
       state.team1 = { name: t1Name, roster: t1Roster, captain: t1Captain };
       state.team2 = { name: t2Name, roster: t2Roster, captain: t2Captain };
+      state.umpires = { straight: straightUmp, leg: legUmp };
       state.maxOvers = overs;
       state.scorerPin = pin;
       state.currentInning = 1;
@@ -2079,7 +2223,7 @@ Chahal</textarea>
       saveState();
       switchTab('match');
       renderAll();
-      alert(`Setup applied! Match PIN set to ${pin}`);
+      alert(`Setup applied! Match started and auto-archived.`);
     }
 
     // Compute End-of-Match Awards across both innings
@@ -2103,7 +2247,6 @@ Chahal</textarea>
             sr: b.balls > 0 ? ((b.runs / b.balls) * 100) : 0
           });
 
-          // Extract catches from dismissal text or caughtBy property
           let catcher = b.caughtBy || null;
           if (!catcher && b.isOut && b.dismissalText) {
             const cAndBMatch = b.dismissalText.match(/^c\s*&\s*b\s+(.+)$/i);
@@ -2140,7 +2283,6 @@ Chahal</textarea>
         }
       });
 
-      // 1. Best Batsman (Highest Runs, tie-breaker: higher SR)
       let bestBatter = null;
       if (allBatters.length > 0) {
         const sortedBat = [...allBatters].sort((a, b) => {
@@ -2152,7 +2294,6 @@ Chahal</textarea>
         }
       }
 
-      // 2. Best Bowler (Highest Wickets, tie-breaker: lowest Economy Rate)
       let bestBowler = null;
       if (allBowlers.length > 0) {
         const sortedBowl = [...allBowlers].sort((a, b) => {
@@ -2162,7 +2303,6 @@ Chahal</textarea>
         bestBowler = sortedBowl[0];
       }
 
-      // 3. Highest Catches
       let highestCatches = null;
       const catchList = Object.values(catchCounts).sort((a, b) => b.catches - a.catches);
       if (catchList.length > 0 && catchList[0].catches > 0) {
@@ -2174,7 +2314,6 @@ Chahal</textarea>
         };
       }
 
-      // 4. Highest Number of Boundaries (4s + 6s together)
       let mostBoundaries = null;
       if (allBatters.length > 0) {
         const sortedBounds = [...allBatters].sort((a, b) => {
@@ -2202,7 +2341,6 @@ Chahal</textarea>
       container.classList.remove('hidden');
       const awards = computeMatchAwards();
 
-      // Best Batsman
       if (awards.bestBatter) {
         document.getElementById('awardBestBatterName').innerText = `${getFormattedPlayerName(awards.bestBatter.name, awards.bestBatter.team)} (${awards.bestBatter.team})`;
         document.getElementById('awardBestBatterStat').innerText = `${awards.bestBatter.runs} Runs (${awards.bestBatter.balls}b)`;
@@ -2213,7 +2351,6 @@ Chahal</textarea>
         document.getElementById('awardBestBatterSub').innerText = '--';
       }
 
-      // Best Bowler
       if (awards.bestBowler) {
         const econText = awards.bestBowler.ballsBowled > 0 ? awards.bestBowler.econ.toFixed(2) : '0.00';
         document.getElementById('awardBestBowlerName').innerText = `${getFormattedPlayerName(awards.bestBowler.name, awards.bestBowler.team)} (${awards.bestBowler.team})`;
@@ -2225,7 +2362,6 @@ Chahal</textarea>
         document.getElementById('awardBestBowlerSub').innerText = '--';
       }
 
-      // Highest Catches
       if (awards.highestCatches) {
         document.getElementById('awardMostCatchesName').innerText = awards.highestCatches.names;
         document.getElementById('awardMostCatchesStat').innerText = `${awards.highestCatches.catches} Catch${awards.highestCatches.catches !== 1 ? 'es' : ''}`;
@@ -2236,7 +2372,6 @@ Chahal</textarea>
         document.getElementById('awardMostCatchesSub').innerText = 'Fielding';
       }
 
-      // Most Boundaries (4s + 6s)
       if (awards.mostBoundaries) {
         document.getElementById('awardMostBoundariesName').innerText = `${getFormattedPlayerName(awards.mostBoundaries.name, awards.mostBoundaries.team)} (${awards.mostBoundaries.team})`;
         document.getElementById('awardMostBoundariesStat').innerText = `${awards.mostBoundaries.boundaries} Boundaries`;
@@ -2248,48 +2383,33 @@ Chahal</textarea>
       }
     }
 
-    // Save or Update Match Checkpoint in History
-    function archiveCurrentMatch(isQuickCheckpoint = false) {
-      const inn1 = state.innings[0];
-      const inn2 = state.innings[1];
-      if (!state.matchId) state.matchId = 'match_' + Date.now();
+    function renderUmpireCredits() {
+      const straightName = state.umpires?.straight?.trim() || 'Not Assigned';
+      const legName = state.umpires?.leg?.trim() || 'Not Assigned';
 
-      const statusLabel = state.matchResultText 
-        ? state.matchResultText 
-        : `In Progress (${state.currentInning === 1 ? '1st' : '2nd'} Inn - ${formatOvers(currentInning().legalBalls)} ov)`;
+      document.getElementById('displayStraightUmpire').innerText = straightName;
+      document.getElementById('displayLegUmpire').innerText = legName;
 
-      const awards = state.matchWinner ? computeMatchAwards() : null;
-
-      const matchRecord = {
-        id: state.matchId,
-        date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-        time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-        team1Name: state.team1.name,
-        team2Name: state.team2.name,
-        t1Score: `${inn1.totalRuns}/${inn1.wickets} (${formatOvers(inn1.legalBalls)})`,
-        t2Score: `${inn2.totalRuns}/${inn2.wickets} (${formatOvers(inn2.legalBalls)})`,
-        result: statusLabel,
-        isCompleted: Boolean(state.matchWinner),
-        winner: state.matchWinner || "In Progress",
-        awards: awards,
-        fullState: JSON.parse(JSON.stringify(state))
-      };
-
-      const existingHistory = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
-      const existingIndex = existingHistory.findIndex(item => item.id === state.matchId);
-
-      if (existingIndex !== -1) {
-        existingHistory[existingIndex] = matchRecord;
+      const thanksEl = document.getElementById('umpireThanksMessage');
+      if (state.umpires?.straight?.trim() && state.umpires?.leg?.trim()) {
+        thanksEl.innerText = `Special thanks to Straight Umpire ${straightName} and Leg Umpire ${legName} for regulating the match fairly and keeping the game running smoothly!`;
+      } else if (state.umpires?.straight?.trim() || state.umpires?.leg?.trim()) {
+        const activeUmp = state.umpires?.straight?.trim() || state.umpires?.leg?.trim();
+        thanksEl.innerText = `Special thanks to Umpire ${activeUmp} for regulating the match fairly and keeping the game running smoothly!`;
       } else {
-        existingHistory.unshift(matchRecord);
+        thanksEl.innerText = `Special thanks to our match umpires for regulating the game fairly and keeping the spirit of cage cricket alive!`;
       }
+    }
 
-      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(existingHistory));
+    // Explicit Save / Snapshot to History
+    function archiveCurrentMatch(isQuickSnapshot = false) {
+      autoSyncLiveMatchToHistory();
+      const timeStr = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-      if (isQuickCheckpoint) {
-        alert(`Checkpoint saved at ${matchRecord.time}! You can safely resume this match anytime from History.`);
+      if (isQuickSnapshot) {
+        alert(`Live match snapshot updated at ${timeStr} in History!`);
       } else {
-        alert("Match & Awards archived to History!");
+        alert("Match, Awards & Umpire Credits archived to History!");
         renderHistory();
         switchTab('history');
       }
@@ -2300,43 +2420,52 @@ Chahal</textarea>
       const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
 
       if (history.length === 0) {
-        container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-900 rounded-xl border border-slate-800">No saved matches or checkpoints found.</div>`;
+        container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-900 rounded-xl border border-slate-800">No saved matches found.</div>`;
         return;
       }
 
-      container.innerHTML = history.map((m, index) => `
-        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2.5 shadow">
-          <div class="flex justify-between items-center text-[10px] text-slate-400">
-            <span>${m.date} ${m.time ? '· ' + m.time : ''}</span>
-            <span class="font-bold ${m.isCompleted ? 'text-amber-400' : 'text-emerald-400'}">
-              ${m.isCompleted ? '🏆' : '⏳'} ${m.result}
-            </span>
-          </div>
-          
-          <div class="flex justify-between items-center text-xs font-bold text-white">
-            <span>${m.team1Name}: <span class="text-emerald-400">${m.t1Score}</span></span>
-            <span class="text-slate-500">vs</span>
-            <span>${m.team2Name}: <span class="text-emerald-400">${m.t2Score}</span></span>
-          </div>
+      container.innerHTML = history.map((m, index) => {
+        const isCurrentActive = (m.id === state.matchId);
+        const umpText = (m.umpires && (m.umpires.straight || m.umpires.leg))
+          ? `Umpires: ${[m.umpires.straight, m.umpires.leg].filter(Boolean).join(' & ')}`
+          : '';
 
-          <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2">
-            <!-- Option 1: Retrieve & Continue Scoring -->
-            <button type="button" onclick="resumeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black flex items-center justify-center gap-1 shadow transition">
-              ▶️ Resume Match
-            </button>
+        return `
+          <div class="bg-slate-900 p-3 rounded-xl border ${isCurrentActive ? 'border-emerald-500/60' : 'border-slate-800'} space-y-2 shadow">
+            <div class="flex justify-between items-center text-[10px] text-slate-400">
+              <span>${m.date} ${m.time ? '· ' + m.time : ''} ${isCurrentActive ? '<span class="text-emerald-400 font-bold ml-1">[Active]</span>' : ''}</span>
+              <span class="font-bold ${m.isCompleted ? 'text-amber-400' : 'text-emerald-400'}">
+                ${m.isCompleted ? '🏆' : '⏳'} ${m.result}
+              </span>
+            </div>
+            
+            <div class="flex justify-between items-center text-xs font-bold text-white">
+              <span>${m.team1Name}: <span class="text-emerald-400">${m.t1Score}</span></span>
+              <span class="text-slate-500">vs</span>
+              <span>${m.team2Name}: <span class="text-emerald-400">${m.t2Score}</span></span>
+            </div>
 
-            <!-- Option 2: Load Read-Only Scorecard & Awards for Later Analysis -->
-            <button type="button" onclick="analyzeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold flex items-center justify-center gap-1 transition">
-              📋 Analyze Scorecard
-            </button>
+            ${umpText ? `<div class="text-[10px] text-slate-400">🙏 ${umpText}</div>` : ''}
+
+            <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2">
+              <!-- Option 1: Load & Resume/Restart Scoring -->
+              <button type="button" onclick="resumeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black flex items-center justify-center gap-1 shadow transition">
+                ▶️ Load & Resume
+              </button>
+
+              <!-- Option 2: Load Read-Only Scorecard & Awards for Analysis -->
+              <button type="button" onclick="analyzeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold flex items-center justify-center gap-1 transition">
+                📋 View Scorecard
+              </button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function resumeArchivedMatch(index) {
       if (currentRole !== 'scorer') {
-        alert("Unlock Scorer Mode with your PIN first to resume and edit a live match.");
+        alert("Unlock Scorer Mode with your PIN first to load and resume scoring a match.");
         openPinModal();
         return;
       }
@@ -2348,8 +2477,14 @@ Chahal</textarea>
         return;
       }
 
-      if (confirm(`Resume "${record.team1Name} vs ${record.team2Name}" and continue scoring from where it left off?`)) {
+      if (confirm(`Load "${record.team1Name} vs ${record.team2Name}" (${record.result}) into the active scoreboard?`)) {
         state = JSON.parse(JSON.stringify(record.fullState));
+        // If loading a completed match to restart/continue, clear winner lock if user wants to resume play
+        if (state.matchWinner && confirm("This match was marked completed. Do you want to reopen scoring to continue/restart from this point?")) {
+          state.matchWinner = null;
+          state.matchResultText = null;
+          state.innings[state.currentInning - 1].isInningComplete = false;
+        }
         saveState();
         applyRoleUI();
         renderAll();
@@ -2367,7 +2502,7 @@ Chahal</textarea>
 
       state = JSON.parse(JSON.stringify(record.fullState));
       currentRole = 'viewer';
-      saveState();
+      localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(state));
       applyRoleUI();
       renderAll();
       switchTab('scorecard');
@@ -2389,7 +2524,8 @@ Chahal</textarea>
         alert("Unlock Scorer Mode with PIN first to reset or start a new match.");
         return;
       }
-      if (confirm("Reset current match data? Make sure you save a checkpoint to History first if needed.")) {
+      if (confirm("Start a brand new match? Your current match is already saved in History and can be resumed anytime.")) {
+        autoSyncLiveMatchToHistory();
         localStorage.removeItem(MATCH_STORAGE_KEY);
         location.reload();
       }
@@ -2574,6 +2710,7 @@ Chahal</textarea>
 
       renderScorecardTables();
       renderMatchAwards();
+      renderUmpireCredits();
     }
 
     function renderScorecardTables() {
@@ -2788,10 +2925,24 @@ Chahal</textarea>
         text += generateInningScorecardText(inn2, 2);
       }
 
+      // Special Thanks to Straight & Leg Umpires
+      const straightUmp = state.umpires?.straight?.trim();
+      const legUmp = state.umpires?.leg?.trim();
+      text += `🙏 *MATCH OFFICIALS & SPECIAL THANKS:*\n`;
+      if (straightUmp) text += `• *Straight Umpire:* ${straightUmp}\n`;
+      if (legUmp) text += `• *Leg Umpire:* ${legUmp}\n`;
+      if (straightUmp && legUmp) {
+        text += `_Special thanks to ${straightUmp} and ${legUmp} for regulating the game!_\n\n`;
+      } else if (straightUmp || legUmp) {
+        text += `_Special thanks to ${straightUmp || legUmp} for regulating the game!_\n\n`;
+      } else {
+        text += `_Special thanks to our umpires for regulating the game!_\n\n`;
+      }
+
       text += `_Scored pitch-side on HS Cage Cricket Web Scorer_`;
 
       navigator.clipboard.writeText(text).then(() => {
-        alert("Complete official match scorecard & awards copied to clipboard! Paste directly into WhatsApp.");
+        alert("Complete official match scorecard, awards & umpire thanks copied to clipboard! Paste directly into WhatsApp.");
       }).catch(err => {
         console.error("Clipboard copy failed", err);
       });
