@@ -528,7 +528,7 @@ Chahal</textarea>
 
   <!-- ================= MODALS ================= -->
 
-  <!-- CHOOSE BATSMAN MODAL -->
+  <!-- CHOOSE BATSMAN MODAL (FULL SQUAD LIST) -->
   <div id="chooseBatterModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -537,7 +537,7 @@ Chahal</textarea>
       </div>
 
       <p class="text-[11px] text-slate-400 leading-normal">
-        Pick who walks in. Players who have played 6+ balls cannot return until every other benchmate has completed at least 6 balls or is out.
+        Select any available squad player to take the crease (excluding batters already on pitch or permanently out).
       </p>
 
       <div class="space-y-2.5 text-xs">
@@ -547,7 +547,7 @@ Chahal</textarea>
         </div>
 
         <div>
-          <label class="text-slate-300 font-semibold block mb-1">Select Incoming Player:</label>
+          <label class="text-slate-300 font-semibold block mb-1">Select Player from Squad:</label>
           <select id="chooseBatterIncomingSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-300 font-semibold text-xs"></select>
         </div>
       </div>
@@ -789,8 +789,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v36_setup_disabled_in_viewer';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v36_setup_disabled_in_viewer';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v37_choose_any_squad_batter';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v37_choose_any_squad_batter';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -990,7 +990,6 @@ Chahal</textarea>
     function handleRoleToggle() {
       if (currentRole === 'scorer') {
         currentRole = 'viewer';
-        // If currently on setup tab, kick back to match tab on lock
         const setupTab = document.getElementById('tabSetup');
         if (setupTab && !setupTab.classList.contains('hidden')) {
           switchTab('match');
@@ -1029,7 +1028,6 @@ Chahal</textarea>
       }
     }
 
-    // Role UI logic with explicit setup tab enabling/disabling
     function applyRoleUI() {
       const btn = document.getElementById('modeToggleBtn');
       const label = document.getElementById('roleLabel');
@@ -1045,7 +1043,6 @@ Chahal</textarea>
         banner.classList.add('hidden');
         controls.forEach(el => el.classList.remove('hidden'));
         
-        // Enable Setup tab
         if (navSetup) {
           navSetup.disabled = false;
           navSetup.classList.remove('opacity-40', 'cursor-not-allowed');
@@ -1058,7 +1055,6 @@ Chahal</textarea>
         banner.classList.remove('hidden');
         controls.forEach(el => el.classList.add('hidden'));
 
-        // Disable Setup tab in Viewer mode
         if (navSetup) {
           navSetup.disabled = true;
           navSetup.classList.add('opacity-40', 'cursor-not-allowed');
@@ -1407,6 +1403,7 @@ Chahal</textarea>
       openRetdModal(role);
     }
 
+    // Updated: Allows choosing ANY available batsman from the full squad list
     function openChooseBatterModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1420,19 +1417,26 @@ Chahal</textarea>
       const incomingSelect = document.getElementById('chooseBatterIncomingSelect');
       incomingSelect.innerHTML = '';
 
-      const eligible = getEligibleBatters();
+      // Show ALL non-out squad players who aren't currently at the crease
+      const squadBench = [];
+      inn.batters.forEach((b, idx) => {
+        if (b.isOut) return;
+        if (idx === inn.strikerIndex || idx === inn.nonStrikerIndex) return;
+        squadBench.push({ ...b, originalIndex: idx });
+      });
 
-      if (eligible.length === 0) {
-        alert("No eligible batsman available. Either everyone has played 6+ balls or remaining bench players haven't batted yet.");
+      if (squadBench.length === 0) {
+        alert("No other players available on the bench (all remaining squad members are either batting or out).");
         return;
       }
 
-      eligible.forEach(b => {
+      squadBench.forEach(b => {
         const opt = document.createElement('option');
         opt.value = b.originalIndex;
-        let badge = ' (Fresh - <6b)';
+        let badge = '';
         if (b.isExemptFromLimit) badge = ' (∞ Unlimited Spell)';
-        else if (b.isPaused) badge = ` (Resumes at ${b.stretchBalls}/12b)`;
+        else if (b.isPaused) badge = ` (Paused at ${b.stretchBalls}/12b - Can Return)`;
+        else badge = ` (Fresh - ${b.stretchBalls}/12b)`;
         
         opt.innerText = `${getFormattedPlayerName(b.name, inn.battingTeam)}${badge}`;
         incomingSelect.appendChild(opt);
@@ -2260,7 +2264,6 @@ Chahal</textarea>
       }
     }
 
-    // Role-enforced tab switching
     function switchTab(tabId) {
       if (tabId === 'setup' && currentRole !== 'scorer') {
         alert("Setup is locked in Viewer Mode. Unlock Scorer Mode with PIN to configure match.");
@@ -2283,7 +2286,6 @@ Chahal</textarea>
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
-    // WhatsApp match report export
     function copyMatchSummary() {
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
