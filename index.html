@@ -83,24 +83,34 @@
         </button>
       </div>
 
-      <!-- Winner Notification Banner -->
-      <div id="matchWinnerBanner" class="hidden bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-slate-950 p-3.5 rounded-2xl shadow-xl flex items-center justify-between border border-amber-300 animate-pulse">
-        <div class="flex items-center gap-2.5">
-          <span class="text-3xl">🏆</span>
-          <div>
-            <span class="text-[10px] font-black uppercase tracking-wider block text-amber-950/80">Match Concluded</span>
-            <h2 class="text-base font-black text-slate-950 leading-tight" id="matchWinnerBannerText">Winner: --</h2>
+      <!-- Winner / Tie Notification Banner -->
+      <div id="matchWinnerBanner" class="hidden bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-slate-950 p-3.5 rounded-2xl shadow-xl space-y-2.5 border border-amber-300">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="text-3xl" id="matchWinnerBannerIcon">🏆</span>
+            <div>
+              <span class="text-[10px] font-black uppercase tracking-wider block text-amber-950/80" id="matchWinnerBannerSub">Match Concluded</span>
+              <h2 class="text-base font-black text-slate-950 leading-tight" id="matchWinnerBannerText">Winner: --</h2>
+            </div>
           </div>
+          <button type="button" onclick="switchTab('scorecard')" class="px-2.5 py-1.5 bg-slate-950 text-amber-300 text-xs font-black rounded-lg shadow">
+            Awards & Summary
+          </button>
         </div>
-        <button type="button" onclick="switchTab('scorecard')" class="px-2.5 py-1 bg-slate-950 text-amber-300 text-xs font-black rounded-lg shadow">
-          Awards & Summary
+
+        <!-- Super Over Trigger (Visible on Tie in Scorer Mode) -->
+        <button id="launchSuperOverBtn" type="button" onclick="openSuperOverSetupModal()" class="hidden w-full py-2 px-3 rounded-xl bg-slate-950 hover:bg-slate-900 text-emerald-400 font-black text-xs flex items-center justify-center gap-1.5 shadow-lg border border-emerald-500/50 transition">
+          ⚡ Play Super Over Tie-Breaker
         </button>
       </div>
       
       <!-- Match Center Card -->
       <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 rounded-2xl border border-slate-800 p-4 shadow-xl space-y-3">
         <div class="flex justify-between items-center text-xs text-slate-400 pb-2 border-b border-slate-800/80">
-          <span class="font-bold text-slate-300" id="currentInningTitle">1st Innings</span>
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-slate-300" id="currentInningTitle">1st Innings</span>
+            <span id="superOverBadge" class="hidden px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/50 text-amber-300 font-black text-[10px] uppercase tracking-wider">⚡ Super Over</span>
+          </div>
           <div class="flex items-center gap-2">
             <span class="bg-slate-800 px-2.5 py-0.5 rounded text-[11px] text-amber-400 font-mono font-bold" id="strikeRotatorCycle">Strike: 0/3</span>
             <span class="text-emerald-400 font-medium text-[11px]" id="targetDisplay"></span>
@@ -127,7 +137,7 @@
           </div>
         </div>
 
-        <!-- 2nd Innings Live Chase Equation Banner -->
+        <!-- Live Chase Equation Banner -->
         <div id="chaseEquationBanner" class="hidden p-2 rounded-xl bg-slate-850 border border-slate-700/80 text-center text-xs"></div>
 
         <!-- Over Timeline -->
@@ -193,6 +203,12 @@
           </div>
         </div>
 
+        <!-- Live Partnership & Last Wicket Strip -->
+        <div class="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-300">
+          <span class="text-emerald-400 font-semibold" id="livePartnershipDisplay">🤝 Partnership: 0 (0b)</span>
+          <span class="text-slate-400 truncate max-w-[52%] text-right" id="liveLastWicketDisplay"></span>
+        </div>
+
         <!-- Strike Controls -->
         <div class="pt-2 flex items-center justify-between border-t border-slate-800/80 gap-2">
           <div id="lmsBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded bg-purple-950 border border-purple-500/50 text-purple-300">
@@ -238,7 +254,7 @@
       <!-- SCORER KEYPAD -->
       <div id="scorerKeypad" class="scorer-control bg-slate-900 rounded-2xl border border-slate-800 p-3 shadow-lg space-y-2.5">
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
-          <span>Scoring Pad (Strike auto-rotates every 3 legal balls)</span>
+          <span id="keypadRuleHint">Scoring Pad (Strike auto-rotates every 3 legal balls)</span>
           <span class="text-emerald-400 font-normal">Cage Rules</span>
         </div>
 
@@ -314,6 +330,15 @@
         </div>
       </div>
 
+      <!-- SUPER OVER SCORECARD CARD (Displayed when Super Over played) -->
+      <div id="superOverScorecardContainer" class="hidden bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/30 rounded-xl border border-emerald-500/50 p-3.5 shadow-xl space-y-2.5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+          <span class="text-xs font-black text-amber-400 uppercase tracking-wider">⚡ Super Over Tie-Breaker</span>
+          <span class="text-[10px] font-bold text-emerald-300" id="soResultBadge">In Progress</span>
+        </div>
+        <div id="soInningsDetails" class="space-y-2 text-xs"></div>
+      </div>
+
       <!-- Team 1 Innings Table -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 space-y-2">
         <div class="flex justify-between items-center text-xs font-bold text-emerald-400 border-b border-slate-800 pb-1.5">
@@ -334,6 +359,12 @@
             </thead>
             <tbody id="t1BattingTableBody" class="divide-y divide-slate-800/40 text-slate-200"></tbody>
           </table>
+        </div>
+
+        <!-- Team 1 Fall of Wickets -->
+        <div id="t1FowContainer" class="pt-2 border-t border-slate-800/80 text-[11px] text-slate-300 hidden">
+          <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px] block mb-0.5">Fall of Wickets:</span>
+          <p id="t1FowText" class="font-mono text-slate-300 leading-relaxed"></p>
         </div>
 
         <div class="pt-3 border-t border-slate-800">
@@ -375,6 +406,12 @@
           </table>
         </div>
 
+        <!-- Team 2 Fall of Wickets -->
+        <div id="t2FowContainer" class="pt-2 border-t border-slate-800/80 text-[11px] text-slate-300 hidden">
+          <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px] block mb-0.5">Fall of Wickets:</span>
+          <p id="t2FowText" class="font-mono text-slate-300 leading-relaxed"></p>
+        </div>
+
         <div class="pt-3 border-t border-slate-800">
           <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bowling</div>
           <table class="w-full text-left text-xs">
@@ -399,7 +436,7 @@
             <span class="text-base">🏅</span>
             <h4 class="font-black text-amber-400 text-xs uppercase tracking-wider">Match Awards & Highlights</h4>
           </div>
-          <span class="text-[10px] text-slate-400 font-semibold">Both Innings</span>
+          <span class="text-[10px] text-slate-400 font-semibold">Main Innings</span>
         </div>
 
         <div class="grid grid-cols-1 gap-2 text-xs">
@@ -487,17 +524,23 @@
       <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
         <div>
           <h3 class="font-bold text-white text-sm">Saved & Auto-Archived Matches</h3>
-          <p class="text-[11px] text-slate-400">Load any match to resume scoring, restart, or analyze</p>
+          <p class="text-[11px] text-slate-400">Load, resume, analyze, or import JSON backups</p>
         </div>
-        <button type="button" onclick="clearHistory()" class="scorer-control text-[11px] text-rose-400 hover:underline">
-          Clear All
-        </button>
+        <div class="flex items-center gap-2">
+          <input type="file" id="importJsonFileInput" accept=".json,application/json" onchange="handleImportMatchJSON(event)" class="hidden">
+          <button type="button" onclick="triggerImportJSON()" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold flex items-center gap-1 shadow">
+            📥 Import JSON
+          </button>
+          <button type="button" onclick="clearHistory()" class="scorer-control text-[11px] text-rose-400 hover:underline">
+            Clear All
+          </button>
+        </div>
       </div>
 
       <div id="historyListContainer" class="space-y-2.5"></div>
     </div>
 
-    <!-- ================= TAB: SETUP (VOICE INPUT FOR TEAMS, UMPIRES & PLAYERS) ================= -->
+    <!-- ================= TAB: SETUP ================= -->
     <div id="tabSetup" class="hidden space-y-4">
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -506,22 +549,20 @@
         </div>
         
         <div class="grid grid-cols-2 gap-3">
-          <!-- Team 1 Name -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-xs text-slate-400">Team 1 (Bat 1st)</label>
-              <button type="button" id="micBtnT1" onclick="startVoiceInput('setupTeam1Name', 'micBtnT1', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 1 Name">
+              <button type="button" id="micBtnT1" onclick="startVoiceInput('setupTeam1Name', 'micBtnT1', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1">
                 🎙️ Mic
               </button>
             </div>
             <input type="text" id="setupTeam1Name" value="Hawks" onchange="refreshLineupSelectors()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
           </div>
 
-          <!-- Team 2 Name -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-xs text-slate-400">Team 2 (Bowl 1st)</label>
-              <button type="button" id="micBtnT2" onclick="startVoiceInput('setupTeam2Name', 'micBtnT2', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Team 2 Name">
+              <button type="button" id="micBtnT2" onclick="startVoiceInput('setupTeam2Name', 'micBtnT2', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1">
                 🎙️ Mic
               </button>
             </div>
@@ -556,22 +597,20 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <!-- Straight Umpire -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-xs text-slate-400">Straight Umpire</label>
-              <button type="button" id="micBtnUmp1" onclick="startVoiceInput('setupStraightUmpire', 'micBtnUmp1', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Straight Umpire">
+              <button type="button" id="micBtnUmp1" onclick="startVoiceInput('setupStraightUmpire', 'micBtnUmp1', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1">
                 🎙️ Mic
               </button>
             </div>
             <input type="text" id="setupStraightUmpire" placeholder="e.g., Suresh" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
           </div>
 
-          <!-- Leg Umpire -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-xs text-slate-400">Leg Umpire</label>
-              <button type="button" id="micBtnUmp2" onclick="startVoiceInput('setupLegUmpire', 'micBtnUmp2', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Voice Input Leg Umpire">
+              <button type="button" id="micBtnUmp2" onclick="startVoiceInput('setupLegUmpire', 'micBtnUmp2', false)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1">
                 🎙️ Mic
               </button>
             </div>
@@ -582,7 +621,7 @@
 
       <!-- Opening Lineup -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
-        <h3 class="font-bold text-white text-sm border-b border-slate-800 pb-2">1st Innings: Opening Lineup</h3>
+        <h3 class="font-bold text-white text-sm border-b border-slate-800 pb-2">1st Innings: Opening Lineup (For New Match)</h3>
         <div class="space-y-2 text-xs">
           <div>
             <label class="text-slate-400 block mb-1">Opening Striker (🏏* - Team 1):</label>
@@ -599,19 +638,18 @@
         </div>
       </div>
 
-      <!-- Squad Rosters with Voice Input for Players -->
+      <!-- Squad Rosters -->
       <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
           <h3 class="font-bold text-white text-sm">Squad Rosters</h3>
-          <span class="text-[10px] text-emerald-400 font-bold">Voice: 1 or multiple players</span>
+          <span class="text-[10px] text-emerald-400 font-bold">Edit names in-place or add late arrivals</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3 text-xs">
-          <!-- Team 1 Players -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-[11px] font-bold text-slate-400">Team 1 Players</label>
-              <button type="button" id="micBtnRosterT1" onclick="startVoiceInput('setupT1Roster', 'micBtnRosterT1', true)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Speak player names for Team 1">
+              <button type="button" id="micBtnRosterT1" onclick="startVoiceInput('setupT1Roster', 'micBtnRosterT1', true)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1">
                 🎙️ Add Player
               </button>
             </div>
@@ -623,11 +661,10 @@ Rinku
 Axar</textarea>
           </div>
 
-          <!-- Team 2 Players -->
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-[11px] font-bold text-slate-400">Team 2 Players</label>
-              <button type="button" id="micBtnRosterT2" onclick="startVoiceInput('setupT2Roster', 'micBtnRosterT2', true)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1" title="Speak player names for Team 2">
+              <button type="button" id="micBtnRosterT2" onclick="startVoiceInput('setupT2Roster', 'micBtnRosterT2', true)" class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-bold text-emerald-400 hover:bg-slate-700 flex items-center gap-1">
                 🎙️ Add Player
               </button>
             </div>
@@ -640,15 +677,113 @@ Chahal</textarea>
           </div>
         </div>
 
-        <button type="button" onclick="applySetupAndReset()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
-          Apply Setup & Start Match
-        </button>
+        <div class="space-y-2 pt-1">
+          <button type="button" onclick="updateNamesWithoutReset()" class="scorer-control w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-xs shadow-lg transition flex items-center justify-center gap-1.5">
+            ✏️ Update Names & Umpires (Keep Live Score)
+          </button>
+
+          <button type="button" onclick="applySetupAndReset()" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
+            🔄 Apply Setup & Start New Match (Reset 0-0)
+          </button>
+        </div>
       </div>
     </div>
 
   </main>
 
   <!-- ================= MODALS ================= -->
+
+  <!-- SUPER OVER SETUP MODAL -->
+  <div id="superOverSetupModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-amber-500/70 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl my-auto">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div class="flex items-center gap-1.5">
+          <span class="text-lg">⚡</span>
+          <h3 class="font-black text-amber-400 text-base">Super Over Setup</h3>
+        </div>
+        <button type="button" onclick="closeSuperOverSetupModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <!-- Batting Order -->
+        <div>
+          <label class="text-slate-300 font-semibold block mb-1">Who Bats 1st in Super Over?</label>
+          <select id="soBattingOrderSelect" onchange="populateSuperOverSelectors()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-300 font-bold text-xs"></select>
+        </div>
+
+        <!-- Wicket & Strike Swap Rules -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-slate-400 text-[11px] block mb-1">Wicket Limit:</label>
+            <select id="soWicketLimitSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-white font-semibold text-[11px]">
+              <option value="2">2 Wickets (Standard)</option>
+              <option value="3">3 Wickets (LMS)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 text-[11px] block mb-1">3-Ball Auto-Swap:</label>
+            <select id="soStrikeSwapSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-white font-semibold text-[11px]">
+              <option value="true">Enabled (Every 3b)</option>
+              <option value="false">Disabled (Off)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Team Batting 1st in SO -->
+        <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+          <span class="text-[11px] font-black text-emerald-400 uppercase tracking-wider block" id="soBat1TeamLabel">1st Innings Batting Squad (3 Batters)</span>
+          <div class="grid grid-cols-3 gap-1.5">
+            <div>
+              <label class="text-[10px] text-slate-400 block">Striker*</label>
+              <select id="soBat1Opener1" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-white font-semibold"></select>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">Non-Striker</label>
+              <select id="soBat1Opener2" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-white font-semibold"></select>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">3rd Batter</label>
+              <select id="soBat1Reserve" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-white font-semibold"></select>
+            </div>
+          </div>
+          <div>
+            <label class="text-[10px] text-amber-300 block">Bowler (<span id="soBowl1TeamName">--</span>):</label>
+            <select id="soBowl1Select" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-amber-300 font-semibold"></select>
+          </div>
+        </div>
+
+        <!-- Team Batting 2nd in SO -->
+        <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+          <span class="text-[11px] font-black text-sky-400 uppercase tracking-wider block" id="soBat2TeamLabel">2nd Innings Batting Squad (3 Batters)</span>
+          <div class="grid grid-cols-3 gap-1.5">
+            <div>
+              <label class="text-[10px] text-slate-400 block">Striker*</label>
+              <select id="soBat2Opener1" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-white font-semibold"></select>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">Non-Striker</label>
+              <select id="soBat2Opener2" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-white font-semibold"></select>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">3rd Batter</label>
+              <select id="soBat2Reserve" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-white font-semibold"></select>
+            </div>
+          </div>
+          <div>
+            <label class="text-[10px] text-amber-300 block">Bowler (<span id="soBowl2TeamName">--</span>):</label>
+            <select id="soBowl2Select" class="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-[11px] text-amber-300 font-semibold"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 flex gap-2">
+        <button type="button" onclick="closeSuperOverSetupModal()" class="w-1/3 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+        <button type="button" onclick="confirmStartSuperOver()" class="w-2/3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
+          ⚡ Start Super Over
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- CHOOSE BATSMAN MODAL (CAGE RULES ENFORCED) -->
   <div id="chooseBatterModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
@@ -746,7 +881,7 @@ Chahal</textarea>
         <button type="button" onclick="closeWicketModal()" class="text-slate-400 hover:text-white">✕</button>
       </div>
 
-      <p class="text-[11px] text-rose-300/80">Batsman is permanently out and cannot bat again in this innings.</p>
+      <p class="text-[11px] text-rose-300/80">Batsman is permanently out and cannot bat again in this innings. (Batters cannot be dismissed on Wide or No-Ball).</p>
 
       <div class="space-y-2 text-xs">
         <div>
@@ -917,8 +1052,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v43_returning_batter_status_fix';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v43_returning_batter_status_fix';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v45_super_over_and_audit_fixes';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v45_super_over_and_audit_fixes';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -939,6 +1074,14 @@ Chahal</textarea>
         createNewInningObject('Hawks', 'Tigers'),
         createNewInningObject('Tigers', 'Hawks')
       ],
+      superOver: {
+        isActive: false,
+        currentInning: 1,
+        wicketLimit: 2,
+        enable3BallSwap: true,
+        resultText: null,
+        innings: []
+      },
       historyStack: []
     };
 
@@ -959,6 +1102,9 @@ Chahal</textarea>
         lastOverBowlerIndex: null,
         batters: [],
         bowlers: [],
+        fow: [],
+        partnershipRuns: 0,
+        partnershipBalls: 0,
         isLastManStanding: false,
         isInningComplete: false
       };
@@ -1001,6 +1147,9 @@ Chahal</textarea>
       inn.cycleBallCount = 0;
       inn.overLegalBalls = 0;
       inn.currentOverDeliveries = [];
+      inn.fow = [];
+      inn.partnershipRuns = 0;
+      inn.partnershipBalls = 0;
     }
 
     function startVoiceInput(targetElementId, micButtonId, isRoster = false) {
@@ -1094,16 +1243,38 @@ Chahal</textarea>
       if (!state.umpires) {
         state.umpires = { straight: '', leg: '' };
       }
+      if (!state.superOver) {
+        state.superOver = { isActive: false, currentInning: 1, wicketLimit: 2, enable3BallSwap: true, resultText: null, innings: [] };
+      }
+      state.innings.forEach(inn => {
+        if (!inn.fow) inn.fow = [];
+        if (typeof inn.partnershipRuns !== 'number') inn.partnershipRuns = 0;
+        if (typeof inn.partnershipBalls !== 'number') inn.partnershipBalls = 0;
+      });
       if (!state.innings[0].batters || state.innings[0].batters.length === 0) {
         initInningStats(0, 0, 1, 0);
         initInningStats(1, 0, 1, 0);
       }
+      syncSetupInputsFromState();
       autoSyncLiveMatchToHistory();
       updateOversDisplay();
       refreshLineupSelectors();
       applyRoleUI();
       renderAll();
     });
+
+    function syncSetupInputsFromState() {
+      document.getElementById('setupTeam1Name').value = state.team1.name || 'Hawks';
+      document.getElementById('setupTeam2Name').value = state.team2.name || 'Tigers';
+      document.getElementById('setupMaxOvers').value = state.maxOvers || 10;
+      document.getElementById('setupScorerPin').value = state.scorerPin || '1234';
+      document.getElementById('setupT1Roster').value = (state.team1.roster || []).join('\n');
+      document.getElementById('setupT2Roster').value = (state.team2.roster || []).join('\n');
+      if (state.umpires) {
+        document.getElementById('setupStraightUmpire').value = state.umpires.straight || '';
+        document.getElementById('setupLegUmpire').value = state.umpires.leg || '';
+      }
+    }
 
     function saveState() {
       try {
@@ -1122,7 +1293,9 @@ Chahal</textarea>
 
         const statusLabel = state.matchResultText 
           ? state.matchResultText 
-          : `In Progress (${state.currentInning === 1 ? '1st' : '2nd'} Inn - ${formatOvers(currentInning().legalBalls)} ov)`;
+          : (state.superOver?.isActive
+              ? `Super Over (${state.superOver.currentInning === 1 ? '1st' : '2nd'} Inn)`
+              : `In Progress (${state.currentInning === 1 ? '1st' : '2nd'} Inn - ${formatOvers(currentInning().legalBalls)} ov)`);
 
         const awards = state.matchWinner ? computeMatchAwards() : null;
 
@@ -1250,7 +1423,8 @@ Chahal</textarea>
         innings: state.innings,
         currentInning: state.currentInning,
         matchWinner: state.matchWinner,
-        matchResultText: state.matchResultText
+        matchResultText: state.matchResultText,
+        superOver: state.superOver
       })));
       if (state.historyStack.length > 50) state.historyStack.shift();
     }
@@ -1261,6 +1435,7 @@ Chahal</textarea>
         return;
       }
 
+      pendingRetirementCheck = false;
       document.getElementById('bowlerModal').classList.add('hidden');
       document.getElementById('midOverBowlerModal').classList.add('hidden');
       document.getElementById('forcedPauseModal').classList.add('hidden');
@@ -1268,12 +1443,14 @@ Chahal</textarea>
       document.getElementById('retdModal').classList.add('hidden');
       document.getElementById('noBallModal').classList.add('hidden');
       document.getElementById('chooseBatterModal').classList.add('hidden');
+      document.getElementById('superOverSetupModal').classList.add('hidden');
 
       const previous = state.historyStack.pop();
       state.innings = previous.innings;
       state.currentInning = previous.currentInning;
       state.matchWinner = previous.matchWinner;
       state.matchResultText = previous.matchResultText;
+      if (previous.superOver) state.superOver = previous.superOver;
 
       saveState();
       renderAll();
@@ -1287,6 +1464,140 @@ Chahal</textarea>
 
     function getFormattedPlayerName(playerName, teamName) {
       return isCaptain(playerName, teamName) ? `${playerName} (c)` : playerName;
+    }
+
+    // Active Innings Helper (automatically routes to Super Over when active)
+    function isSuperOverActive() {
+      return Boolean(state.superOver && state.superOver.isActive);
+    }
+
+    function currentInning() {
+      if (isSuperOverActive()) {
+        return state.superOver.innings[state.superOver.currentInning - 1];
+      }
+      return state.innings[state.currentInning - 1];
+    }
+
+    // ================= SUPER OVER SETUP & EXECUTION =================
+    function openSuperOverSetupModal() {
+      if (currentRole !== 'scorer') {
+        alert("Unlock Scorer Mode with PIN first.");
+        return;
+      }
+
+      const orderSelect = document.getElementById('soBattingOrderSelect');
+      orderSelect.innerHTML = `
+        <option value="t2_first">${state.team2.name} Bat 1st (Standard Rule)</option>
+        <option value="t1_first">${state.team1.name} Bat 1st (Captain Toss Choice)</option>
+      `;
+
+      populateSuperOverSelectors();
+      document.getElementById('superOverSetupModal').classList.remove('hidden');
+    }
+
+    function closeSuperOverSetupModal() {
+      document.getElementById('superOverSetupModal').classList.add('hidden');
+    }
+
+    function populateSuperOverSelectors() {
+      const order = document.getElementById('soBattingOrderSelect').value;
+      const bat1Team = (order === 't2_first') ? state.team2 : state.team1;
+      const bat2Team = (order === 't2_first') ? state.team1 : state.team2;
+
+      document.getElementById('soBat1TeamLabel').innerText = `${bat1Team.name} Batting (3 Batters)`;
+      document.getElementById('soBowl1TeamName').innerText = bat2Team.name;
+      document.getElementById('soBat2TeamLabel').innerText = `${bat2Team.name} Batting (3 Batters)`;
+      document.getElementById('soBowl2TeamName').innerText = bat1Team.name;
+
+      const mainInn1 = state.innings[0];
+      const mainInn2 = state.innings[1];
+      const injuredNames = new Set([
+        ...(mainInn1.bowlers || []).filter(b => b.isInjured).map(b => b.name),
+        ...(mainInn2.bowlers || []).filter(b => b.isInjured).map(b => b.name)
+      ]);
+
+      document.getElementById('soBat1Opener1').innerHTML = bat1Team.roster.map((n, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${getFormattedPlayerName(n, bat1Team.name)}</option>`).join('');
+      document.getElementById('soBat1Opener2').innerHTML = bat1Team.roster.map((n, i) => `<option value="${i}" ${i === 1 ? 'selected' : ''}>${getFormattedPlayerName(n, bat1Team.name)}</option>`).join('');
+      document.getElementById('soBat1Reserve').innerHTML = bat1Team.roster.map((n, i) => `<option value="${i}" ${i === Math.min(2, bat1Team.roster.length - 1) ? 'selected' : ''}>${getFormattedPlayerName(n, bat1Team.name)}</option>`).join('');
+
+      const fitBowl1 = bat2Team.roster.map((n, i) => ({ name: n, idx: i })).filter(p => !injuredNames.has(p.name));
+      const listBowl1 = fitBowl1.length > 0 ? fitBowl1 : bat2Team.roster.map((n, i) => ({ name: n, idx: i }));
+      document.getElementById('soBowl1Select').innerHTML = listBowl1.map((p, k) => `<option value="${p.idx}" ${k === 0 ? 'selected' : ''}>${getFormattedPlayerName(p.name, bat2Team.name)}</option>`).join('');
+
+      document.getElementById('soBat2Opener1').innerHTML = bat2Team.roster.map((n, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${getFormattedPlayerName(n, bat2Team.name)}</option>`).join('');
+      document.getElementById('soBat2Opener2').innerHTML = bat2Team.roster.map((n, i) => `<option value="${i}" ${i === 1 ? 'selected' : ''}>${getFormattedPlayerName(n, bat2Team.name)}</option>`).join('');
+      document.getElementById('soBat2Reserve').innerHTML = bat2Team.roster.map((n, i) => `<option value="${i}" ${i === Math.min(2, bat2Team.roster.length - 1) ? 'selected' : ''}>${getFormattedPlayerName(n, bat2Team.name)}</option>`).join('');
+
+      const fitBowl2 = bat1Team.roster.map((n, i) => ({ name: n, idx: i })).filter(p => !injuredNames.has(p.name));
+      const listBowl2 = fitBowl2.length > 0 ? fitBowl2 : bat1Team.roster.map((n, i) => ({ name: n, idx: i }));
+      document.getElementById('soBowl2Select').innerHTML = listBowl2.map((p, k) => `<option value="${p.idx}" ${k === 0 ? 'selected' : ''}>${getFormattedPlayerName(p.name, bat1Team.name)}</option>`).join('');
+    }
+
+    function confirmStartSuperOver() {
+      const order = document.getElementById('soBattingOrderSelect').value;
+      const wicketLimit = parseInt(document.getElementById('soWicketLimitSelect').value) || 2;
+      const enable3BallSwap = (document.getElementById('soStrikeSwapSelect').value === 'true');
+
+      const bat1Team = (order === 't2_first') ? state.team2 : state.team1;
+      const bat2Team = (order === 't2_first') ? state.team1 : state.team2;
+
+      const b1_o1 = parseInt(document.getElementById('soBat1Opener1').value);
+      const b1_o2 = parseInt(document.getElementById('soBat1Opener2').value);
+      const b1_res = parseInt(document.getElementById('soBat1Reserve').value);
+      const bw1_idx = parseInt(document.getElementById('soBowl1Select').value);
+
+      const b2_o1 = parseInt(document.getElementById('soBat2Opener1').value);
+      const b2_o2 = parseInt(document.getElementById('soBat2Opener2').value);
+      const b2_res = parseInt(document.getElementById('soBat2Reserve').value);
+      const bw2_idx = parseInt(document.getElementById('soBowl2Select').value);
+
+      if (b1_o1 === b1_o2 || (bat1Team.roster.length >= 3 && (b1_o1 === b1_res || b1_o2 === b1_res))) {
+        alert(`Please select 3 distinct batters for ${bat1Team.name}'s Super Over!`);
+        return;
+      }
+      if (b2_o1 === b2_o2 || (bat2Team.roster.length >= 3 && (b2_o1 === b2_res || b2_o2 === b2_res))) {
+        alert(`Please select 3 distinct batters for ${bat2Team.name}'s Super Over!`);
+        return;
+      }
+
+      recordStateForUndo();
+
+      const buildSOInning = (batTeam, bowlTeam, o1Idx, o2Idx, resIdx, bwIdx) => {
+        const inn = createNewInningObject(batTeam.name, bowlTeam.name);
+        const nominatedIndices = Array.from(new Set([o1Idx, o2Idx, resIdx]));
+        inn.batters = nominatedIndices.map((rosterIdx, i) => ({
+          name: batTeam.roster[rosterIdx],
+          runs: 0, balls: 0, fours: 0, sixes: 0, stretchBalls: 0,
+          isOut: false, isPaused: false, isExemptFromLimit: true, isRetiredHurt: false,
+          dismissalText: 'not out', caughtBy: null,
+          hasBatted: (i === 0 || i === 1)
+        }));
+        inn.bowlers = bowlTeam.roster.map(name => ({
+          name: name, ballsBowled: 0, runsConceded: 0, wickets: 0, maidens: 0, isInjured: false
+        }));
+        inn.strikerIndex = 0;
+        inn.nonStrikerIndex = 1;
+        inn.currentBowlerIndex = bwIdx;
+        return inn;
+      };
+
+      state.matchWinner = null;
+      state.matchResultText = null;
+      state.superOver = {
+        isActive: true,
+        currentInning: 1,
+        wicketLimit: wicketLimit,
+        enable3BallSwap: enable3BallSwap,
+        resultText: null,
+        innings: [
+          buildSOInning(bat1Team, bat2Team, b1_o1, b1_o2, b1_res, bw1_idx),
+          buildSOInning(bat2Team, bat1Team, b2_o1, b2_o2, b2_res, bw2_idx)
+        ]
+      };
+
+      closeSuperOverSetupModal();
+      saveState();
+      renderAll();
     }
 
     function recordDelivery(runs) {
@@ -1319,6 +1630,8 @@ Chahal</textarea>
       inn.legalBalls += 1;
       inn.overLegalBalls += 1;
       inn.cycleBallCount += 1;
+      inn.partnershipRuns = (inn.partnershipRuns || 0) + runs;
+      inn.partnershipBalls = (inn.partnershipBalls || 0) + 1;
 
       inn.currentOverDeliveries.push({ type: 'run', text: runs.toString(), val: runs });
 
@@ -1353,6 +1666,8 @@ Chahal</textarea>
       inn.legalBalls += 1;
       inn.overLegalBalls += 1;
       inn.cycleBallCount += 1;
+      inn.partnershipRuns = (inn.partnershipRuns || 0) - 2;
+      inn.partnershipBalls = (inn.partnershipBalls || 0) + 1;
 
       inn.currentOverDeliveries.push({ type: 'penalty', text: '-2', val: -2 });
 
@@ -1378,6 +1693,7 @@ Chahal</textarea>
       inn.totalRuns += 1;
       inn.extras.wides += 1;
       bowler.runsConceded += 1;
+      inn.partnershipRuns = (inn.partnershipRuns || 0) + 1;
 
       inn.currentOverDeliveries.push({ type: 'extra', text: 'WD', val: 1 });
 
@@ -1413,6 +1729,7 @@ Chahal</textarea>
       inn.totalRuns += totalConceded;
       inn.extras.noballs += 1;
       bowler.runsConceded += totalConceded;
+      inn.partnershipRuns = (inn.partnershipRuns || 0) + totalConceded;
 
       if (batRuns > 0) {
         striker.runs += batRuns;
@@ -1428,8 +1745,10 @@ Chahal</textarea>
       renderAll();
     }
 
+    // Captures batterWhoFacedBall BEFORE 3-ball swapStrike() runs
     function processBallAftermath() {
       const inn = currentInning();
+      const batterWhoFacedBall = inn.strikerIndex;
 
       checkMatchProgress();
 
@@ -1439,19 +1758,20 @@ Chahal</textarea>
         return;
       }
 
+      const shouldAutoSwap = isSuperOverActive() ? state.superOver.enable3BallSwap : true;
       if (inn.cycleBallCount >= 3) {
         inn.cycleBallCount = 0;
-        if (!inn.isLastManStanding) {
+        if (shouldAutoSwap && !inn.isLastManStanding) {
           swapStrike();
         }
       }
 
-      const isPaused = checkStretchLimit(inn.strikerIndex);
+      const isPaused = isSuperOverActive() ? false : checkStretchLimit(batterWhoFacedBall);
 
       if (inn.overLegalBalls >= 6) {
         inn.overLegalBalls = 0;
         inn.lastOverBowlerIndex = inn.currentBowlerIndex;
-        if (!inn.isInningComplete) {
+        if (!inn.isInningComplete && !isSuperOverActive()) {
           if (!isPaused) {
             openMandatoryBowlerModal();
           } else {
@@ -1535,6 +1855,7 @@ Chahal</textarea>
       document.getElementById('forcedPauseModal').classList.remove('hidden');
     }
 
+    // Places incoming substitute into whichever end the 12-ball paused batter currently occupies
     function confirmForcedPause() {
       const inn = currentInning();
       const select = document.getElementById('forcedPauseNextBatterSelect');
@@ -1551,7 +1872,12 @@ Chahal</textarea>
       incomingBatter.isPaused = false;
       incomingBatter.dismissalText = 'not out';
 
-      inn.strikerIndex = nextIdx;
+      if (inn.batters[inn.nonStrikerIndex]?.isPaused) {
+        inn.nonStrikerIndex = nextIdx;
+      } else {
+        inn.strikerIndex = nextIdx;
+      }
+
       document.getElementById('forcedPauseModal').classList.add('hidden');
 
       if (pendingRetirementCheck) {
@@ -1694,18 +2020,22 @@ Chahal</textarea>
       nextSelect.innerHTML = '';
       const available = getEligibleBatters();
 
-      available.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b.originalIndex;
-        const tag = b.isExemptFromLimit ? ' (∞ Unlimited)' : (b.isPaused ? ` (Resumes at ${b.stretchBalls}/12b)` : ' (Fresh - <6b)');
-        opt.innerText = `${getFormattedPlayerName(b.name, inn.battingTeam)}${tag}`;
-        nextSelect.appendChild(opt);
-      });
+      const so2WicketEnd = isSuperOverActive() && state.superOver.wicketLimit === 2 && inn.wickets >= 1;
 
-      if (available.length === 0) {
+      if (!so2WicketEnd) {
+        available.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.originalIndex;
+          const tag = isSuperOverActive() ? ' (3rd Batter)' : (b.isExemptFromLimit ? ' (∞ Unlimited)' : (b.isPaused ? ` (Resumes at ${b.stretchBalls}/12b)` : ' (Fresh - <6b)'));
+          opt.innerText = `${getFormattedPlayerName(b.name, inn.battingTeam)}${tag}`;
+          nextSelect.appendChild(opt);
+        });
+      }
+
+      if (nextSelect.options.length === 0) {
         const opt = document.createElement('option');
         opt.value = "-1";
-        opt.innerText = "No players remaining (LMS or All Out)";
+        opt.innerText = so2WicketEnd ? "Super Over Innings Ends (2 Wickets)" : "No players remaining (LMS or All Out)";
         nextSelect.appendChild(opt);
       }
 
@@ -1801,20 +2131,36 @@ Chahal</textarea>
       batterOut.dismissalText = formattedDismissal;
       batterOut.caughtBy = caughtByPlayer;
 
-      if (manner !== 'Retired Hurt') {
-        inn.wickets += 1;
-        if (manner !== 'Run Out') {
-          bowler.wickets += 1;
-        }
-      }
-
       bowler.ballsBowled += 1;
       inn.legalBalls += 1;
       inn.overLegalBalls += 1;
       inn.cycleBallCount += 1;
       inn.currentOverDeliveries.push({ type: 'wicket', text: manner === 'Retired Hurt' ? 'RH' : 'W', val: 0 });
 
-      if (nextIndex !== -1) {
+      if (!inn.fow) inn.fow = [];
+
+      if (manner !== 'Retired Hurt') {
+        inn.wickets += 1;
+        if (manner !== 'Run Out') {
+          bowler.wickets += 1;
+        }
+        inn.fow.push({
+          wicketNum: inn.wickets,
+          score: inn.totalRuns,
+          batterName: batterOut.name,
+          over: formatOvers(inn.legalBalls),
+          manner: formattedDismissal
+        });
+      }
+
+      inn.partnershipRuns = 0;
+      inn.partnershipBalls = 0;
+
+      const soWicketCapReached = isSuperOverActive() && inn.wickets >= state.superOver.wicketLimit;
+
+      if (soWicketCapReached) {
+        inn.isInningComplete = true;
+      } else if (nextIndex !== -1) {
         const nextBatter = inn.batters[nextIndex];
         nextBatter.hasBatted = true;
         nextBatter.isPaused = false;
@@ -1848,6 +2194,11 @@ Chahal</textarea>
 
     function openRetdModal(presetRole = null) {
       if (state.matchWinner) return;
+      if (isSuperOverActive()) {
+        alert("Tactical RETD step-out is disabled during a 1-over Super Over. Use OUT -> Retired Hurt if a batter is injured.");
+        return;
+      }
+
       const inn = currentInning();
       const targetSelect = document.getElementById('retdTargetBatterSelect');
       targetSelect.innerHTML = '';
@@ -1962,7 +2313,7 @@ Chahal</textarea>
     }
 
     function openMandatoryBowlerModal() {
-      if (state.matchWinner) return;
+      if (state.matchWinner || isSuperOverActive()) return;
       const inn = currentInning();
       const select = document.getElementById('newBowlerSelect');
       select.innerHTML = '';
@@ -2051,7 +2402,7 @@ Chahal</textarea>
       }
 
       const activeUninjured = inn.bowlers.filter(b => !b.isInjured).length;
-      if (selectedIdx === inn.lastOverBowlerIndex && activeUninjured > 2) {
+      if (selectedIdx === inn.lastOverBowlerIndex && activeUninjured > 2 && !isSuperOverActive()) {
         alert("Cannot switch to the bowler who bowled the previous full over. Please select another bowler.");
         return;
       }
@@ -2072,6 +2423,46 @@ Chahal</textarea>
     }
 
     function checkMatchProgress() {
+      // Handle Super Over Progression
+      if (isSuperOverActive()) {
+        const so = state.superOver;
+        const soInn1 = so.innings[0];
+        const soInn2 = so.innings[1];
+
+        if (so.currentInning === 1) {
+          if (soInn1.legalBalls >= 6 || soInn1.wickets >= so.wicketLimit || soInn1.isInningComplete) {
+            soInn1.isInningComplete = true;
+            so.currentInning = 2;
+            alert(`Super Over 1st Innings Complete! ${soInn1.battingTeam} scored ${soInn1.totalRuns}/${soInn1.wickets}. Target for ${soInn2.battingTeam} is ${soInn1.totalRuns + 1} in 6 balls.`);
+          }
+        } else {
+          const soTarget = soInn1.totalRuns + 1;
+          if (soInn2.totalRuns >= soTarget) {
+            soInn2.isInningComplete = true;
+            state.matchWinner = soInn2.battingTeam;
+            const wLeft = so.wicketLimit - soInn2.wickets;
+            const res = `${soInn2.battingTeam} won via Super Over (by ${wLeft} wicket${wLeft !== 1 ? 's' : ''})`;
+            so.resultText = res;
+            state.matchResultText = res;
+          } else if (soInn2.legalBalls >= 6 || soInn2.wickets >= so.wicketLimit || soInn2.isInningComplete) {
+            soInn2.isInningComplete = true;
+            if (soInn1.totalRuns > soInn2.totalRuns) {
+              state.matchWinner = soInn1.battingTeam;
+              const diff = soInn1.totalRuns - soInn2.totalRuns;
+              const res = `${soInn1.battingTeam} won via Super Over (by ${diff} run${diff !== 1 ? 's' : ''})`;
+              so.resultText = res;
+              state.matchResultText = res;
+            } else {
+              state.matchWinner = 'Tied';
+              so.resultText = "Super Over Tied!";
+              state.matchResultText = "Match & Super Over Tied";
+            }
+          }
+        }
+        return;
+      }
+
+      // Main Match Progression
       const inn1 = state.innings[0];
       const inn2 = state.innings[1];
       const maxBalls = state.maxOvers * 6;
@@ -2144,10 +2535,6 @@ Chahal</textarea>
       renderAll();
     }
 
-    function currentInning() {
-      return state.innings[state.currentInning - 1];
-    }
-
     function updateOversDisplay() {
       const overs = parseInt(document.getElementById('setupMaxOvers').value) || 10;
       document.getElementById('setupTotalBallsCalc').innerText = `= ${overs * 6} Legal Balls Total`;
@@ -2175,6 +2562,131 @@ Chahal</textarea>
         document.getElementById('setupStraightUmpire').value = state.umpires.straight || '';
         document.getElementById('setupLegUmpire').value = state.umpires.leg || '';
       }
+    }
+
+    // Preserves captain by roster index and uses word-boundary matching for dismissal strings
+    function updateNamesWithoutReset() {
+      const newT1Name = document.getElementById('setupTeam1Name').value.trim() || state.team1.name;
+      const newT2Name = document.getElementById('setupTeam2Name').value.trim() || state.team2.name;
+      const overs = parseInt(document.getElementById('setupMaxOvers').value) || state.maxOvers;
+      const pin = document.getElementById('setupScorerPin').value.trim() || state.scorerPin;
+      const straightUmp = document.getElementById('setupStraightUmpire').value.trim();
+      const legUmp = document.getElementById('setupLegUmpire').value.trim();
+
+      const newT1Roster = document.getElementById('setupT1Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const newT2Roster = document.getElementById('setupT2Roster').value.split('\n').map(s => s.trim()).filter(Boolean);
+
+      if (newT1Roster.length < 2 || newT2Roster.length < 2) {
+        alert("Each team needs at least 2 players!");
+        return;
+      }
+
+      const oldT1Name = state.team1.name;
+      const oldT2Name = state.team2.name;
+      const oldT1Roster = [...state.team1.roster];
+      const oldT2Roster = [...state.team2.roster];
+
+      const oldCap1Idx = oldT1Roster.indexOf(state.team1.captain);
+      const oldCap2Idx = oldT2Roster.indexOf(state.team2.captain);
+      const selectedCap1 = document.getElementById('setupT1Captain').value;
+      const selectedCap2 = document.getElementById('setupT2Captain').value;
+
+      recordStateForUndo();
+
+      state.team1.name = newT1Name;
+      state.team2.name = newT2Name;
+      state.team1.roster = newT1Roster;
+      state.team2.roster = newT2Roster;
+      state.team1.captain = newT1Roster.includes(selectedCap1)
+        ? selectedCap1
+        : (oldCap1Idx !== -1 && newT1Roster[oldCap1Idx] ? newT1Roster[oldCap1Idx] : newT1Roster[0]);
+      state.team2.captain = newT2Roster.includes(selectedCap2)
+        ? selectedCap2
+        : (oldCap2Idx !== -1 && newT2Roster[oldCap2Idx] ? newT2Roster[oldCap2Idx] : newT2Roster[0]);
+      state.umpires = { straight: straightUmp, leg: legUmp };
+      state.maxOvers = overs;
+      state.scorerPin = pin;
+
+      const mapName = (oldName, oldList, newList) => {
+        const idx = oldList.indexOf(oldName);
+        return (idx !== -1 && newList[idx]) ? newList[idx] : oldName;
+      };
+
+      const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const updateInningsCollection = (innArray) => {
+        (innArray || []).forEach(inn => {
+          const isT1Batting = (inn.battingTeam === oldT1Name);
+          inn.battingTeam = isT1Batting ? newT1Name : newT2Name;
+          inn.bowlingTeam = isT1Batting ? newT2Name : newT1Name;
+
+          const oldBatList = isT1Batting ? oldT1Roster : oldT2Roster;
+          const newBatList = isT1Batting ? newT1Roster : newT2Roster;
+          const oldBowlList = isT1Batting ? oldT2Roster : oldT1Roster;
+          const newBowlList = isT1Batting ? newT2Roster : newT1Roster;
+
+          newBatList.forEach((updatedName, i) => {
+            if (inn.batters[i]) {
+              inn.batters[i].name = updatedName;
+            } else if (!isSuperOverActive()) {
+              inn.batters.push({
+                name: updatedName,
+                runs: 0, balls: 0, fours: 0, sixes: 0, stretchBalls: 0,
+                isOut: false, isPaused: false, isExemptFromLimit: false, isRetiredHurt: false,
+                dismissalText: 'not out', caughtBy: null, hasBatted: false
+              });
+            }
+          });
+
+          inn.batters.forEach(b => {
+            if (b.caughtBy) {
+              b.caughtBy = mapName(b.caughtBy, oldBowlList, newBowlList);
+            }
+            if (b.isOut && b.dismissalText) {
+              oldBowlList.forEach((oldBw, idx) => {
+                const newBw = newBowlList[idx];
+                if (newBw && oldBw !== newBw) {
+                  const rx = new RegExp(`\\b${escapeRegex(oldBw)}\\b`, 'g');
+                  b.dismissalText = b.dismissalText.replace(rx, newBw);
+                }
+              });
+            }
+          });
+
+          newBowlList.forEach((updatedName, i) => {
+            if (inn.bowlers[i]) {
+              inn.bowlers[i].name = updatedName;
+            } else {
+              inn.bowlers.push({
+                name: updatedName,
+                ballsBowled: 0, runsConceded: 0, wickets: 0, maidens: 0, isInjured: false
+              });
+            }
+          });
+
+          if (inn.fow) {
+            inn.fow.forEach(f => {
+              f.batterName = mapName(f.batterName, oldBatList, newBatList);
+            });
+          }
+        });
+      };
+
+      updateInningsCollection(state.innings);
+      if (state.superOver?.innings) {
+        updateInningsCollection(state.superOver.innings);
+      }
+
+      if (state.matchWinner === oldT1Name) state.matchWinner = newT1Name;
+      if (state.matchWinner === oldT2Name) state.matchWinner = newT2Name;
+      if (state.matchResultText) {
+        state.matchResultText = state.matchResultText.split(oldT1Name).join(newT1Name).split(oldT2Name).join(newT2Name);
+      }
+
+      saveState();
+      switchTab('match');
+      renderAll();
+      alert("Player names, team names & umpires updated while preserving live match scores!");
     }
 
     function applySetupAndReset() {
@@ -2215,6 +2727,7 @@ Chahal</textarea>
       state.matchWinner = null;
       state.matchResultText = null;
       state.historyStack = [];
+      state.superOver = { isActive: false, currentInning: 1, wicketLimit: 2, enable3BallSwap: true, resultText: null, innings: [] };
       state.innings = [
         createNewInningObject(t1Name, t2Name),
         createNewInningObject(t2Name, t1Name)
@@ -2229,12 +2742,12 @@ Chahal</textarea>
       alert("Setup applied! Match started and auto-archived.");
     }
 
-    function computeMatchAwards() {
+    function computeMatchAwardsFromState(targetState) {
       const allBatters = [];
       const allBowlers = [];
       const catchCounts = {};
 
-      state.innings.forEach(inn => {
+      (targetState.innings || []).forEach(inn => {
         if (!inn || !inn.batters) return;
 
         inn.batters.forEach(b => {
@@ -2329,6 +2842,10 @@ Chahal</textarea>
       }
 
       return { bestBatter, bestBowler, highestCatches, mostBoundaries };
+    }
+
+    function computeMatchAwards() {
+      return computeMatchAwardsFromState(state);
     }
 
     function renderMatchAwards() {
@@ -2481,8 +2998,13 @@ Chahal</textarea>
         if (state.matchWinner && confirm("This match was marked completed. Do you want to reopen scoring to continue/restart from this point?")) {
           state.matchWinner = null;
           state.matchResultText = null;
-          state.innings[state.currentInning - 1].isInningComplete = false;
+          if (isSuperOverActive()) {
+            state.superOver.innings[state.superOver.currentInning - 1].isInningComplete = false;
+          } else {
+            state.innings[state.currentInning - 1].isInningComplete = false;
+          }
         }
+        syncSetupInputsFromState();
         saveState();
         applyRoleUI();
         renderAll();
@@ -2504,6 +3026,73 @@ Chahal</textarea>
       applyRoleUI();
       renderAll();
       switchTab('scorecard');
+    }
+
+    function triggerImportJSON() {
+      const fileInput = document.getElementById('importJsonFileInput');
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+      }
+    }
+
+    function handleImportMatchJSON(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedState = JSON.parse(e.target.result);
+          if (!importedState || !importedState.team1 || !importedState.team2 || !Array.isArray(importedState.innings)) {
+            alert("Invalid match JSON file. Please select a valid backup exported from this scorer.");
+            return;
+          }
+
+          if (!importedState.matchId) {
+            importedState.matchId = 'imported_' + Date.now();
+          }
+
+          const inn1 = importedState.innings[0];
+          const inn2 = importedState.innings[1];
+          const statusLabel = importedState.matchResultText
+            ? importedState.matchResultText
+            : `Imported (${importedState.currentInning === 1 ? '1st' : '2nd'} Inn)`;
+          const computedAwards = importedState.matchWinner ? computeMatchAwardsFromState(importedState) : null;
+
+          const newRecord = {
+            id: importedState.matchId,
+            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+            team1Name: importedState.team1.name,
+            team2Name: importedState.team2.name,
+            t1Score: `${inn1.totalRuns}/${inn1.wickets} (${formatOvers(inn1.legalBalls)})`,
+            t2Score: `${inn2.totalRuns}/${inn2.wickets} (${formatOvers(inn2.legalBalls)})`,
+            umpires: importedState.umpires || { straight: '', leg: '' },
+            result: statusLabel,
+            isCompleted: Boolean(importedState.matchWinner),
+            winner: importedState.matchWinner || "Imported",
+            awards: computedAwards,
+            fullState: importedState
+          };
+
+          const existingHistory = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+          const existingIdx = existingHistory.findIndex(item => item.id === newRecord.id);
+          if (existingIdx !== -1) {
+            existingHistory[existingIdx] = newRecord;
+          } else {
+            existingHistory.unshift(newRecord);
+          }
+
+          localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(existingHistory));
+          renderHistory();
+          alert(`Successfully imported "${newRecord.team1Name} vs ${newRecord.team2Name}" into History! Tap "Load & Resume" or "View Scorecard" to open it.`);
+        } catch (err) {
+          console.error("JSON import error:", err);
+          alert("Could not parse JSON file. Ensure the file is a valid match export.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function clearHistory() {
@@ -2540,19 +3129,37 @@ Chahal</textarea>
 
     function renderAll() {
       const inn = currentInning();
-      const maxLegalBalls = state.maxOvers * 6;
+      const inSO = isSuperOverActive();
+      const activeOversCap = inSO ? 1 : state.maxOvers;
+      const maxLegalBalls = activeOversCap * 6;
       const ballsRemaining = Math.max(0, maxLegalBalls - inn.legalBalls);
 
-      document.getElementById('headerMatchStatus').innerText = `${inn.battingTeam} Batting`;
-      document.getElementById('currentInningTitle').innerText = `${state.currentInning === 1 ? '1st' : '2nd'} Innings`;
-      document.getElementById('strikeRotatorCycle').innerText = `Strike: ${inn.cycleBallCount}/3 balls`;
+      document.getElementById('headerMatchStatus').innerText = inSO ? `⚡ Super Over: ${inn.battingTeam}` : `${inn.battingTeam} Batting`;
+      document.getElementById('currentInningTitle').innerText = inSO
+        ? `SO ${state.superOver.currentInning === 1 ? '1st' : '2nd'} Inn`
+        : `${state.currentInning === 1 ? '1st' : '2nd'} Innings`;
+
+      const soBadge = document.getElementById('superOverBadge');
+      if (inSO) soBadge.classList.remove('hidden');
+      else soBadge.classList.add('hidden');
+
+      const cycleEl = document.getElementById('strikeRotatorCycle');
+      const keypadHint = document.getElementById('keypadRuleHint');
+      if (inSO && !state.superOver.enable3BallSwap) {
+        cycleEl.innerText = `Strike: Manual/Runs`;
+        if (keypadHint) keypadHint.innerText = `Super Over Pad (3-ball auto-swap OFF)`;
+      } else {
+        cycleEl.innerText = `Strike: ${inn.cycleBallCount}/3 balls`;
+        if (keypadHint) keypadHint.innerText = `Scoring Pad (Strike auto-rotates every 3 legal balls)`;
+      }
+
       document.getElementById('ballsRemainingDisplay').innerText = `${ballsRemaining} / ${maxLegalBalls}`;
       document.getElementById('bowlerOverBallsCounter').innerText = `${inn.overLegalBalls}/6 balls`;
 
       document.getElementById('battingTeamDisplay').innerText = inn.battingTeam;
       document.getElementById('liveScore').innerText = `${inn.totalRuns}-${inn.wickets}`;
       document.getElementById('liveOvers').innerText = formatOvers(inn.legalBalls);
-      document.getElementById('maxOversDisplay').innerText = state.maxOvers;
+      document.getElementById('maxOversDisplay').innerText = activeOversCap;
       document.getElementById('crrDisplay').innerText = calcRunRate(inn.totalRuns, inn.legalBalls);
 
       const undoBtn = document.getElementById('undoActionBtn');
@@ -2563,14 +3170,24 @@ Chahal</textarea>
       const winnerBanner = document.getElementById('matchWinnerBanner');
       const scorecardBanner = document.getElementById('scorecardWinnerBanner');
       const crown = document.getElementById('battingTeamWinnerCrown');
+      const soBtn = document.getElementById('launchSuperOverBtn');
 
       if (state.matchWinner) {
         winnerBanner.classList.remove('hidden');
         scorecardBanner.classList.remove('hidden');
-        document.getElementById('matchWinnerBannerText').innerText = `Winner: ${state.matchResultText}`;
-        document.getElementById('scorecardWinnerText').innerText = `🏆 ${state.matchResultText}`;
+        const isTied = (state.matchWinner === 'Tied');
+        document.getElementById('matchWinnerBannerIcon').innerText = isTied ? '🤝' : '🏆';
+        document.getElementById('matchWinnerBannerSub').innerText = isTied ? 'Scores Level!' : 'Match Concluded';
+        document.getElementById('matchWinnerBannerText').innerText = isTied ? `${state.matchResultText}!` : `Winner: ${state.matchResultText}`;
+        document.getElementById('scorecardWinnerText').innerText = isTied ? `🤝 ${state.matchResultText}` : `🏆 ${state.matchResultText}`;
 
-        if (state.matchWinner === inn.battingTeam) {
+        if (isTied && currentRole === 'scorer') {
+          soBtn.classList.remove('hidden');
+        } else {
+          soBtn.classList.add('hidden');
+        }
+
+        if (!isTied && state.matchWinner === inn.battingTeam) {
           crown.classList.remove('hidden');
         } else {
           crown.classList.add('hidden');
@@ -2578,13 +3195,16 @@ Chahal</textarea>
       } else {
         winnerBanner.classList.add('hidden');
         scorecardBanner.classList.add('hidden');
+        soBtn.classList.add('hidden');
         crown.classList.add('hidden');
       }
 
       const equationEl = document.getElementById('chaseEquationBanner');
+      const isChasing = (!inSO && state.currentInning === 2) || (inSO && state.superOver.currentInning === 2);
 
-      if (state.currentInning === 2 && !state.matchWinner) {
-        const target = state.innings[0].totalRuns + 1;
+      if (isChasing && !state.matchWinner) {
+        const firstInnRuns = inSO ? state.superOver.innings[0].totalRuns : state.innings[0].totalRuns;
+        const target = firstInnRuns + 1;
         const runsNeeded = target - inn.totalRuns;
 
         document.getElementById('targetDisplay').innerText = `Target: ${target}`;
@@ -2592,7 +3212,7 @@ Chahal</textarea>
         document.getElementById('rrrDisplay').innerText = ballsRemaining > 0 ? ((runsNeeded / ballsRemaining) * 6).toFixed(2) : '--';
 
         equationEl.classList.remove('hidden');
-        const isCrunch = (ballsRemaining <= 12 || runsNeeded <= 12);
+        const isCrunch = (inSO || ballsRemaining <= 12 || runsNeeded <= 12);
 
         if (runsNeeded > 0 && ballsRemaining > 0) {
           equationEl.className = isCrunch 
@@ -2639,7 +3259,7 @@ Chahal</textarea>
       if (striker) {
         const sName = getFormattedPlayerName(striker.name, inn.battingTeam);
         document.getElementById('strikerNameDisplay').innerText = `${sName} - ${striker.runs}* (${striker.balls}b)`;
-        document.getElementById('strikerStretch').innerText = striker.isExemptFromLimit ? '∞' : `${striker.stretchBalls}/12`;
+        document.getElementById('strikerStretch').innerText = (inSO || striker.isExemptFromLimit) ? '∞' : `${striker.stretchBalls}/12`;
         document.getElementById('strikerRuns').innerText = striker.runs;
         document.getElementById('strikerBalls').innerText = striker.balls;
         document.getElementById('strikerFours').innerText = striker.fours;
@@ -2647,7 +3267,7 @@ Chahal</textarea>
         document.getElementById('strikerSR').innerText = striker.balls > 0 ? ((striker.runs / striker.balls) * 100).toFixed(0) : '0.0';
 
         const sPauseContainer = document.getElementById('strikerCaptainPauseContainer');
-        if (striker.stretchBalls >= 6 && striker.stretchBalls < 12 && !striker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
+        if (!inSO && striker.stretchBalls >= 6 && striker.stretchBalls < 12 && !striker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
           sPauseContainer.classList.remove('hidden');
           document.getElementById('strikerCaptainBtnText').innerText = `📋 Captain's Call: Change Batsman (Faced ${striker.stretchBalls}/12 balls)`;
         } else {
@@ -2677,23 +3297,37 @@ Chahal</textarea>
       } else {
         nonStrikerRow.classList.remove('opacity-30');
         document.getElementById('lmsBadge').classList.add('hidden');
-        if (chooseBtn && currentRole === 'scorer') chooseBtn.classList.remove('hidden');
+        if (chooseBtn && currentRole === 'scorer' && !inSO) chooseBtn.classList.remove('hidden');
+        else if (chooseBtn) chooseBtn.classList.add('hidden');
         if (swapBtn && currentRole === 'scorer') swapBtn.classList.remove('hidden');
         const nsName = getFormattedPlayerName(nonStriker.name, inn.battingTeam);
         document.getElementById('nonStrikerNameDisplay').innerText = `${nsName} - ${nonStriker.runs} (${nonStriker.balls}b)`;
-        document.getElementById('nonStrikerStretch').innerText = nonStriker.isExemptFromLimit ? '∞' : `${nonStriker.stretchBalls}/12`;
+        document.getElementById('nonStrikerStretch').innerText = (inSO || nonStriker.isExemptFromLimit) ? '∞' : `${nonStriker.stretchBalls}/12`;
         document.getElementById('nonStrikerRuns').innerText = nonStriker.runs;
         document.getElementById('nonStrikerBalls').innerText = nonStriker.balls;
         document.getElementById('nonStrikerFours').innerText = nonStriker.fours;
         document.getElementById('nonStrikerSixes').innerText = nonStriker.sixes;
         document.getElementById('nonStrikerSR').innerText = nonStriker.balls > 0 ? ((nonStriker.runs / nonStriker.balls) * 100).toFixed(0) : '0.0';
 
-        if (nonStriker.stretchBalls >= 6 && nonStriker.stretchBalls < 12 && !nonStriker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
+        if (!inSO && nonStriker.stretchBalls >= 6 && nonStriker.stretchBalls < 12 && !nonStriker.isExemptFromLimit && !inn.isLastManStanding && currentRole === 'scorer' && !state.matchWinner) {
           nsPauseContainer.classList.remove('hidden');
           document.getElementById('nonStrikerCaptainBtnText').innerText = `📋 Captain's Call: Change Batsman (Faced ${nonStriker.stretchBalls}/12 balls)`;
         } else {
           nsPauseContainer.classList.add('hidden');
         }
+      }
+
+      // Live Partnership & Last Wicket Strip
+      const pRuns = inn.partnershipRuns || 0;
+      const pBalls = inn.partnershipBalls || 0;
+      document.getElementById('livePartnershipDisplay').innerText = `🤝 Partnership: ${pRuns} (${pBalls}b)`;
+
+      const lastWktEl = document.getElementById('liveLastWicketDisplay');
+      if (inn.fow && inn.fow.length > 0) {
+        const lastW = inn.fow[inn.fow.length - 1];
+        lastWktEl.innerText = `Last Wkt: ${lastW.score}-${lastW.wicketNum} (${lastW.batterName})`;
+      } else {
+        lastWktEl.innerText = '';
       }
 
       // Bowler
@@ -2707,8 +3341,41 @@ Chahal</textarea>
       }
 
       renderScorecardTables();
+      renderSuperOverScorecard();
       renderMatchAwards();
       renderUmpireCredits();
+    }
+
+    function renderSuperOverScorecard() {
+      const container = document.getElementById('superOverScorecardContainer');
+      if (!container) return;
+
+      if (!state.superOver || !state.superOver.isActive || !state.superOver.innings || state.superOver.innings.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      document.getElementById('soResultBadge').innerText = state.superOver.resultText || 'In Progress';
+
+      const detailsEl = document.getElementById('soInningsDetails');
+      detailsEl.innerHTML = state.superOver.innings.map((soInn, idx) => {
+        const activeBatters = soInn.batters.filter(b => b.hasBatted || b.balls > 0 || b.isOut);
+        const batSummary = activeBatters.map(b => `${b.name} ${b.runs}(${b.balls})${b.isOut ? ` [${b.dismissalText}]` : '*'}`).join(', ');
+        const activeBowlers = soInn.bowlers.filter(bw => bw.ballsBowled > 0);
+        const bowlSummary = activeBowlers.map(bw => `${bw.name}: ${formatOvers(bw.ballsBowled)}-${bw.runsConceded}-${bw.wickets}`).join(' | ');
+
+        return `
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="flex justify-between items-center font-bold text-white">
+              <span>SO Inn ${idx + 1}: ${soInn.battingTeam}</span>
+              <span class="text-emerald-400 font-mono">${soInn.totalRuns}/${soInn.wickets} (${formatOvers(soInn.legalBalls)} ov)</span>
+            </div>
+            <div class="text-[11px] text-slate-300">🏏 ${batSummary || 'Yet to bat'}</div>
+            ${bowlSummary ? `<div class="text-[10px] text-slate-400 font-mono">🎯 ${bowlSummary}</div>` : ''}
+          </div>
+        `;
+      }).join('');
     }
 
     function renderScorecardTables() {
@@ -2742,6 +3409,14 @@ Chahal</textarea>
         `;
       }).join('');
 
+      const t1FowContainer = document.getElementById('t1FowContainer');
+      if (inn1.fow && inn1.fow.length > 0) {
+        t1FowContainer.classList.remove('hidden');
+        document.getElementById('t1FowText').innerText = inn1.fow.map(f => `${f.wicketNum}-${f.score} (${f.batterName}, ${f.over} ov)`).join('  |  ');
+      } else {
+        t1FowContainer.classList.add('hidden');
+      }
+
       const t1BowlBody = document.getElementById('t1BowlingTableBody');
       t1BowlBody.innerHTML = inn1.bowlers.map(b => {
         let note = b.isInjured ? ' <span class="text-[10px] text-rose-400 font-normal">(Injured / Retd)</span>' : '';
@@ -2756,7 +3431,7 @@ Chahal</textarea>
         `;
       }).join('');
 
-      if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner) {
+      if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner || isSuperOverActive()) {
         document.getElementById('t2InningsContainer').classList.remove('hidden');
         document.getElementById('t2ScorecardHeader').innerText = `${inn2.battingTeam}${t2Crown} Batting`;
         document.getElementById('t2ScorecardTotal').innerText = `${inn2.totalRuns}-${inn2.wickets} (${formatOvers(inn2.legalBalls)} ov)`;
@@ -2781,6 +3456,14 @@ Chahal</textarea>
             </tr>
           `;
         }).join('');
+
+        const t2FowContainer = document.getElementById('t2FowContainer');
+        if (inn2.fow && inn2.fow.length > 0) {
+          t2FowContainer.classList.remove('hidden');
+          document.getElementById('t2FowText').innerText = inn2.fow.map(f => `${f.wicketNum}-${f.score} (${f.batterName}, ${f.over} ov)`).join('  |  ');
+        } else {
+          t2FowContainer.classList.add('hidden');
+        }
 
         const t2BowlBody = document.getElementById('t2BowlingTableBody');
         t2BowlBody.innerHTML = inn2.bowlers.map(b => {
@@ -2815,7 +3498,10 @@ Chahal</textarea>
       document.getElementById(`nav${capitalize(tabId)}`).classList.add('tab-active');
 
       if (tabId === 'history') renderHistory();
-      if (tabId === 'setup') refreshLineupSelectors();
+      if (tabId === 'setup') {
+        syncSetupInputsFromState();
+        refreshLineupSelectors();
+      }
     }
 
     function capitalize(s) {
@@ -2832,9 +3518,18 @@ Chahal</textarea>
       if (state.matchResultText) {
         text += `🏆 *RESULT: ${state.matchResultText.toUpperCase()}* 🏆\n`;
       } else {
-        text += `⏳ *MATCH IN PROGRESS (${state.currentInning === 1 ? '1st' : '2nd'} Innings)*\n`;
+        text += `⏳ *MATCH IN PROGRESS*\n`;
       }
       text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+      if (state.superOver?.isActive && state.superOver.innings?.length > 0) {
+        text += `⚡ *SUPER OVER SUMMARY:*\n`;
+        state.superOver.innings.forEach((soInn, i) => {
+          const batLine = soInn.batters.filter(b => b.hasBatted || b.balls > 0).map(b => `${b.name} ${b.runs}(${b.balls})`).join(', ');
+          text += `• *SO Inn ${i + 1} (${soInn.battingTeam}):* ${soInn.totalRuns}/${soInn.wickets} (${formatOvers(soInn.legalBalls)} ov) [${batLine}]\n`;
+        });
+        text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      }
 
       if (state.matchWinner) {
         const awards = computeMatchAwards();
@@ -2892,6 +3587,10 @@ Chahal</textarea>
           block += `\n*Yet to Bat (DNB):* ${dnbList.join(', ')}\n`;
         }
 
+        if (inn.fow && inn.fow.length > 0) {
+          block += `\n*Fall of Wickets:* ${inn.fow.map(f => `${f.wicketNum}-${f.score} (${f.batterName}, ${f.over})`).join(', ')}\n`;
+        }
+
         block += `\n*BOWLING FIGURES:*\n`;
         block += `-------------------------------------------\n`;
         block += `Bowler           O    R    W    Econ\n`;
@@ -2919,7 +3618,7 @@ Chahal</textarea>
 
       text += generateInningScorecardText(inn1, 1);
 
-      if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner) {
+      if (state.currentInning === 2 || inn2.legalBalls > 0 || state.matchWinner || isSuperOverActive()) {
         text += generateInningScorecardText(inn2, 2);
       }
 
@@ -2939,7 +3638,7 @@ Chahal</textarea>
       text += `_Scored pitch-side on HS Cage Cricket Web Scorer_`;
 
       navigator.clipboard.writeText(text).then(() => {
-        alert("Complete official match scorecard, awards & umpire thanks copied to clipboard! Paste directly into WhatsApp.");
+        alert("Complete official match scorecard, Super Over & awards copied to clipboard! Paste directly into WhatsApp.");
       }).catch(err => {
         console.error("Clipboard copy failed", err);
       });
