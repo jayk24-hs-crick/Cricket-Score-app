@@ -616,7 +616,7 @@ Chahal</textarea>
     </div>
   </div>
 
-  <!-- DISMISSAL MODAL (OUT) -->
+  <!-- DISMISSAL MODAL (OUT) WITH FIELDER / KEEPER DROPDOWN -->
   <div id="wicketModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-rose-500/60 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -634,14 +634,20 @@ Chahal</textarea>
 
         <div>
           <label class="text-slate-400 block mb-1">Dismissal Manner</label>
-          <select id="wicketDismissalType" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+          <select id="wicketDismissalType" onchange="toggleWicketFielderUI()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-semibold">
             <option value="Bowled">Bowled</option>
             <option value="Caught">Caught</option>
-            <option value="Run Out">Run Out</option>
             <option value="Stumped">Stumped</option>
+            <option value="Run Out">Run Out</option>
             <option value="Hit Wicket">Hit Wicket</option>
             <option value="Retired Hurt">⚠️ Retired Hurt (Injured - Out)</option>
           </select>
+        </div>
+
+        <!-- Dynamic Fielder / Wicketkeeper Dropdown -->
+        <div id="wicketFielderContainer" class="hidden">
+          <label id="wicketFielderLabel" class="text-amber-300 font-semibold block mb-1">Caught By (Fielder):</label>
+          <select id="wicketFielderSelect" class="w-full bg-slate-800 border border-amber-500/50 rounded-lg p-2 text-amber-200 font-semibold"></select>
         </div>
 
         <div>
@@ -789,8 +795,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v37_choose_any_squad_batter';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v37_choose_any_squad_batter';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v38_dismissal_fielder_credits';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v38_dismissal_fielder_credits';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -1403,7 +1409,7 @@ Chahal</textarea>
       openRetdModal(role);
     }
 
-    // Updated: Allows choosing ANY available batsman from the full squad list
+    // Allows choosing ANY available batsman from the full squad list
     function openChooseBatterModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1417,7 +1423,6 @@ Chahal</textarea>
       const incomingSelect = document.getElementById('chooseBatterIncomingSelect');
       incomingSelect.innerHTML = '';
 
-      // Show ALL non-out squad players who aren't currently at the crease
       const squadBench = [];
       inn.batters.forEach((b, idx) => {
         if (b.isOut) return;
@@ -1481,6 +1486,7 @@ Chahal</textarea>
       renderAll();
     }
 
+    // Updated Wicket Modal: Populates Fielder/Keeper dropdown from Bowling Team
     function openWicketModal() {
       if (state.matchWinner) return;
       const inn = currentInning();
@@ -1489,6 +1495,10 @@ Chahal</textarea>
         <option value="${inn.strikerIndex}">${getFormattedPlayerName(inn.batters[inn.strikerIndex].name, inn.battingTeam)} (Striker)</option>
         ${!inn.isLastManStanding ? `<option value="${inn.nonStrikerIndex}">${getFormattedPlayerName(inn.batters[inn.nonStrikerIndex].name, inn.battingTeam)} (Non-Striker)</option>` : ''}
       `;
+
+      // Reset dismissal type to Bowled and hide fielder selector initially
+      document.getElementById('wicketDismissalType').value = 'Bowled';
+      toggleWicketFielderUI();
 
       const nextSelect = document.getElementById('wicketNextBatterSelect');
       nextSelect.innerHTML = '';
@@ -1512,6 +1522,45 @@ Chahal</textarea>
       document.getElementById('wicketModal').classList.remove('hidden');
     }
 
+    function toggleWicketFielderUI() {
+      const manner = document.getElementById('wicketDismissalType').value;
+      const container = document.getElementById('wicketFielderContainer');
+      const label = document.getElementById('wicketFielderLabel');
+      const select = document.getElementById('wicketFielderSelect');
+      const inn = currentInning();
+
+      if (manner === 'Caught' || manner === 'Stumped' || manner === 'Run Out') {
+        container.classList.remove('hidden');
+        select.innerHTML = '';
+
+        if (manner === 'Caught') {
+          label.innerText = 'Caught By (Fielder):';
+        } else if (manner === 'Stumped') {
+          label.innerText = 'Stumped By (Wicketkeeper):';
+        } else if (manner === 'Run Out') {
+          label.innerText = 'Run Out By (Fielder):';
+          const directOpt = document.createElement('option');
+          directOpt.value = '';
+          directOpt.innerText = 'Direct Hit / Team Unassisted';
+          select.appendChild(directOpt);
+        }
+
+        // Populate with bowling team players
+        const bowlingRoster = (inn.bowlingTeam === state.team1.name) ? state.team1.roster : state.team2.roster;
+        const currentBowlerName = inn.bowlers[inn.currentBowlerIndex]?.name;
+
+        bowlingRoster.forEach(playerName => {
+          const opt = document.createElement('option');
+          opt.value = playerName;
+          const isBowlerTag = (playerName === currentBowlerName) ? ' (Bowler)' : '';
+          opt.innerText = `${getFormattedPlayerName(playerName, inn.bowlingTeam)}${isBowlerTag}`;
+          select.appendChild(opt);
+        });
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
     function closeWicketModal() {
       document.getElementById('wicketModal').classList.add('hidden');
     }
@@ -1522,6 +1571,7 @@ Chahal</textarea>
 
       const outIndex = parseInt(document.getElementById('wicketOutBatterSelect').value);
       const manner = document.getElementById('wicketDismissalType').value;
+      const fielderName = document.getElementById('wicketFielderSelect').value;
       const nextIndex = parseInt(document.getElementById('wicketNextBatterSelect').value);
 
       const bowler = inn.bowlers[inn.currentBowlerIndex];
@@ -1531,18 +1581,46 @@ Chahal</textarea>
         inn.currentOverDeliveries = [];
       }
 
+      // Format detailed cricket dismissal text crediting bowler and fielder/keeper
+      let formattedDismissal = manner;
+      if (manner === 'Bowled') {
+        formattedDismissal = `b ${bowler.name}`;
+      } else if (manner === 'Hit Wicket') {
+        formattedDismissal = `hit wicket b ${bowler.name}`;
+      } else if (manner === 'Caught') {
+        if (fielderName === bowler.name) {
+          formattedDismissal = `c & b ${bowler.name}`;
+        } else if (fielderName) {
+          formattedDismissal = `c ${fielderName} b ${bowler.name}`;
+        } else {
+          formattedDismissal = `c sub b ${bowler.name}`;
+        }
+      } else if (manner === 'Stumped') {
+        formattedDismissal = fielderName ? `st ${fielderName} b ${bowler.name}` : `st b ${bowler.name}`;
+      } else if (manner === 'Run Out') {
+        formattedDismissal = fielderName ? `run out (${fielderName})` : `run out`;
+      } else if (manner === 'Retired Hurt') {
+        formattedDismissal = `retired hurt`;
+      }
+
       batterOut.isOut = true;
       batterOut.isPaused = false;
       batterOut.balls += 1;
-      batterOut.dismissalText = manner;
-      inn.wickets += 1;
-      bowler.ballsBowled += 1;
-      if (manner !== 'Run Out') bowler.wickets += 1;
+      batterOut.dismissalText = formattedDismissal;
 
+      // Retired Hurt does not credit a wicket to the bowler or team wicket count
+      if (manner !== 'Retired Hurt') {
+        inn.wickets += 1;
+        if (manner !== 'Run Out') {
+          bowler.wickets += 1;
+        }
+      }
+
+      bowler.ballsBowled += 1;
       inn.legalBalls += 1;
       inn.overLegalBalls += 1;
       inn.cycleBallCount += 1;
-      inn.currentOverDeliveries.push({ type: 'wicket', text: 'W', val: 0 });
+      inn.currentOverDeliveries.push({ type: 'wicket', text: manner === 'Retired Hurt' ? 'RH' : 'W', val: 0 });
 
       if (nextIndex !== -1) {
         const nextBatter = inn.batters[nextIndex];
