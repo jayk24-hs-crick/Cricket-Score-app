@@ -94,7 +94,7 @@
           </div>
         </div>
         <button type="button" onclick="switchTab('scorecard')" class="px-2.5 py-1 bg-slate-950 text-amber-300 text-xs font-black rounded-lg shadow">
-          View Summary
+          Awards & Summary
         </button>
       </div>
       
@@ -296,7 +296,7 @@
       <div id="scorecardWinnerBanner" class="hidden bg-slate-900 border border-amber-500/50 p-4 rounded-xl shadow-lg space-y-1 text-center">
         <span class="text-2xl">🏆</span>
         <h3 class="font-black text-amber-400 text-base" id="scorecardWinnerText">Match Finished</h3>
-        <p class="text-xs text-slate-300" id="scorecardWinnerSub">Detailed figures of both innings captured below</p>
+        <p class="text-xs text-slate-300" id="scorecardWinnerSub">Detailed figures and post-match awards computed below</p>
       </div>
 
       <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
@@ -392,9 +392,71 @@
         </div>
       </div>
 
-      <div class="pt-2">
+      <!-- POST-MATCH AWARDS & HIGHLIGHTS SECTION (Displayed automatically at end of match before archiving) -->
+      <div id="matchAwardsContainer" class="hidden bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 rounded-xl border border-amber-500/50 p-3.5 shadow-xl space-y-2.5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-base">🏅</span>
+            <h4 class="font-black text-amber-400 text-xs uppercase tracking-wider">Match Awards & Highlights</h4>
+          </div>
+          <span class="text-[10px] text-slate-400 font-semibold">Both Innings</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-2 text-xs">
+          <!-- Best Batsman -->
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">🏏 Best Batsman</span>
+              <span class="font-extrabold text-white text-sm" id="awardBestBatterName">--</span>
+            </div>
+            <div class="text-right font-mono">
+              <span class="font-black text-emerald-300 text-sm block" id="awardBestBatterStat">--</span>
+              <span class="text-[10px] text-slate-400" id="awardBestBatterSub">--</span>
+            </div>
+          </div>
+
+          <!-- Best Bowler -->
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">🎯 Best Bowler</span>
+              <span class="font-extrabold text-white text-sm" id="awardBestBowlerName">--</span>
+            </div>
+            <div class="text-right font-mono">
+              <span class="font-black text-amber-300 text-sm block" id="awardBestBowlerStat">--</span>
+              <span class="text-[10px] text-slate-400" id="awardBestBowlerSub">--</span>
+            </div>
+          </div>
+
+          <!-- Highest Catches -->
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">🧤 Highest Catches</span>
+              <span class="font-extrabold text-white text-sm" id="awardMostCatchesName">--</span>
+            </div>
+            <div class="text-right font-mono">
+              <span class="font-black text-sky-300 text-sm block" id="awardMostCatchesStat">--</span>
+              <span class="text-[10px] text-slate-400" id="awardMostCatchesSub">Fielding</span>
+            </div>
+          </div>
+
+          <!-- Highest Boundaries (4s + 6s) -->
+          <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold text-purple-400 uppercase tracking-wider block">💥 Most Boundaries (4s + 6s)</span>
+              <span class="font-extrabold text-white text-sm" id="awardMostBoundariesName">--</span>
+            </div>
+            <div class="text-right font-mono">
+              <span class="font-black text-purple-300 text-sm block" id="awardMostBoundariesStat">--</span>
+              <span class="text-[10px] text-slate-400" id="awardMostBoundariesSub">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Archive Match Button -->
+      <div class="pt-1">
         <button type="button" onclick="archiveCurrentMatch(false)" class="scorer-control w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs flex items-center justify-center gap-1.5 shadow-lg">
-          💾 Save Match to History
+          💾 Save & Archive Match to History
         </button>
       </div>
     </div>
@@ -802,8 +864,8 @@ Chahal</textarea>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    const MATCH_STORAGE_KEY = 'hs_cricket_match_v39_history_resume_and_analyze';
-    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v39_history_resume_and_analyze';
+    const MATCH_STORAGE_KEY = 'hs_cricket_match_v40_post_match_awards';
+    const HISTORY_STORAGE_KEY = 'hs_cricket_history_v40_post_match_awards';
 
     let currentRole = 'viewer';
     let pendingRetirementCheck = false;
@@ -865,6 +927,7 @@ Chahal</textarea>
         isExemptFromLimit: false,
         isRetiredHurt: false,
         dismissalText: 'not out',
+        caughtBy: null,
         hasBatted: (i === sIdx || i === nsIdx)
       }));
 
@@ -1589,6 +1652,8 @@ Chahal</textarea>
       }
 
       let formattedDismissal = manner;
+      let caughtByPlayer = null;
+
       if (manner === 'Bowled') {
         formattedDismissal = `b ${bowler.name}`;
       } else if (manner === 'Hit Wicket') {
@@ -1596,8 +1661,10 @@ Chahal</textarea>
       } else if (manner === 'Caught') {
         if (fielderName === bowler.name) {
           formattedDismissal = `c & b ${bowler.name}`;
+          caughtByPlayer = bowler.name;
         } else if (fielderName) {
           formattedDismissal = `c ${fielderName} b ${bowler.name}`;
+          caughtByPlayer = fielderName;
         } else {
           formattedDismissal = `c sub b ${bowler.name}`;
         }
@@ -1613,6 +1680,7 @@ Chahal</textarea>
       batterOut.isPaused = false;
       batterOut.balls += 1;
       batterOut.dismissalText = formattedDismissal;
+      batterOut.caughtBy = caughtByPlayer;
 
       if (manner !== 'Retired Hurt') {
         inn.wickets += 1;
@@ -2014,6 +2082,172 @@ Chahal</textarea>
       alert(`Setup applied! Match PIN set to ${pin}`);
     }
 
+    // Compute End-of-Match Awards across both innings
+    function computeMatchAwards() {
+      const allBatters = [];
+      const allBowlers = [];
+      const catchCounts = {};
+
+      state.innings.forEach(inn => {
+        if (!inn || !inn.batters) return;
+
+        inn.batters.forEach(b => {
+          allBatters.push({
+            name: b.name,
+            team: inn.battingTeam,
+            runs: b.runs || 0,
+            balls: b.balls || 0,
+            fours: b.fours || 0,
+            sixes: b.sixes || 0,
+            boundaries: (b.fours || 0) + (b.sixes || 0),
+            sr: b.balls > 0 ? ((b.runs / b.balls) * 100) : 0
+          });
+
+          // Extract catches from dismissal text or caughtBy property
+          let catcher = b.caughtBy || null;
+          if (!catcher && b.isOut && b.dismissalText) {
+            const cAndBMatch = b.dismissalText.match(/^c\s*&\s*b\s+(.+)$/i);
+            const caughtMatch = b.dismissalText.match(/^c\s+(.+?)\s+b\s+/i);
+            if (cAndBMatch) {
+              catcher = cAndBMatch[1].trim();
+            } else if (caughtMatch && caughtMatch[1].trim().toLowerCase() !== 'sub') {
+              catcher = caughtMatch[1].trim();
+            }
+          }
+
+          if (catcher) {
+            const key = `${catcher}__${inn.bowlingTeam}`;
+            if (!catchCounts[key]) {
+              catchCounts[key] = { name: catcher, team: inn.bowlingTeam, catches: 0 };
+            }
+            catchCounts[key].catches += 1;
+          }
+        });
+
+        if (inn.bowlers) {
+          inn.bowlers.forEach(bw => {
+            if ((bw.ballsBowled || 0) > 0 || (bw.wickets || 0) > 0) {
+              allBowlers.push({
+                name: bw.name,
+                team: inn.bowlingTeam,
+                ballsBowled: bw.ballsBowled || 0,
+                runsConceded: bw.runsConceded || 0,
+                wickets: bw.wickets || 0,
+                econ: bw.ballsBowled > 0 ? ((bw.runsConceded / bw.ballsBowled) * 6) : 999
+              });
+            }
+          });
+        }
+      });
+
+      // 1. Best Batsman (Highest Runs, tie-breaker: higher SR)
+      let bestBatter = null;
+      if (allBatters.length > 0) {
+        const sortedBat = [...allBatters].sort((a, b) => {
+          if (b.runs !== a.runs) return b.runs - a.runs;
+          return b.sr - a.sr;
+        });
+        if (sortedBat[0].runs > 0 || sortedBat[0].balls > 0) {
+          bestBatter = sortedBat[0];
+        }
+      }
+
+      // 2. Best Bowler (Highest Wickets, tie-breaker: lowest Economy Rate)
+      let bestBowler = null;
+      if (allBowlers.length > 0) {
+        const sortedBowl = [...allBowlers].sort((a, b) => {
+          if (b.wickets !== a.wickets) return b.wickets - a.wickets;
+          return a.econ - b.econ;
+        });
+        bestBowler = sortedBowl[0];
+      }
+
+      // 3. Highest Catches
+      let highestCatches = null;
+      const catchList = Object.values(catchCounts).sort((a, b) => b.catches - a.catches);
+      if (catchList.length > 0 && catchList[0].catches > 0) {
+        const maxC = catchList[0].catches;
+        const topCatchers = catchList.filter(c => c.catches === maxC);
+        highestCatches = {
+          names: topCatchers.map(c => `${c.name} (${c.team})`).join(', '),
+          catches: maxC
+        };
+      }
+
+      // 4. Highest Number of Boundaries (4s + 6s together)
+      let mostBoundaries = null;
+      if (allBatters.length > 0) {
+        const sortedBounds = [...allBatters].sort((a, b) => {
+          if (b.boundaries !== a.boundaries) return b.boundaries - a.boundaries;
+          if (b.sixes !== a.sixes) return b.sixes - a.sixes;
+          return b.runs - a.runs;
+        });
+        if (sortedBounds[0].boundaries > 0) {
+          mostBoundaries = sortedBounds[0];
+        }
+      }
+
+      return { bestBatter, bestBowler, highestCatches, mostBoundaries };
+    }
+
+    function renderMatchAwards() {
+      const container = document.getElementById('matchAwardsContainer');
+      if (!container) return;
+
+      if (!state.matchWinner) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      const awards = computeMatchAwards();
+
+      // Best Batsman
+      if (awards.bestBatter) {
+        document.getElementById('awardBestBatterName').innerText = `${getFormattedPlayerName(awards.bestBatter.name, awards.bestBatter.team)} (${awards.bestBatter.team})`;
+        document.getElementById('awardBestBatterStat').innerText = `${awards.bestBatter.runs} Runs (${awards.bestBatter.balls}b)`;
+        document.getElementById('awardBestBatterSub').innerText = `SR: ${awards.bestBatter.sr.toFixed(1)}`;
+      } else {
+        document.getElementById('awardBestBatterName').innerText = '--';
+        document.getElementById('awardBestBatterStat').innerText = '0 Runs';
+        document.getElementById('awardBestBatterSub').innerText = '--';
+      }
+
+      // Best Bowler
+      if (awards.bestBowler) {
+        const econText = awards.bestBowler.ballsBowled > 0 ? awards.bestBowler.econ.toFixed(2) : '0.00';
+        document.getElementById('awardBestBowlerName').innerText = `${getFormattedPlayerName(awards.bestBowler.name, awards.bestBowler.team)} (${awards.bestBowler.team})`;
+        document.getElementById('awardBestBowlerStat').innerText = `${awards.bestBowler.wickets} Wkt${awards.bestBowler.wickets !== 1 ? 's' : ''} · Econ ${econText}`;
+        document.getElementById('awardBestBowlerSub').innerText = `${formatOvers(awards.bestBowler.ballsBowled)} ov, ${awards.bestBowler.runsConceded} runs`;
+      } else {
+        document.getElementById('awardBestBowlerName').innerText = '--';
+        document.getElementById('awardBestBowlerStat').innerText = '0 Wkts';
+        document.getElementById('awardBestBowlerSub').innerText = '--';
+      }
+
+      // Highest Catches
+      if (awards.highestCatches) {
+        document.getElementById('awardMostCatchesName').innerText = awards.highestCatches.names;
+        document.getElementById('awardMostCatchesStat').innerText = `${awards.highestCatches.catches} Catch${awards.highestCatches.catches !== 1 ? 'es' : ''}`;
+        document.getElementById('awardMostCatchesSub').innerText = 'Top Fielder';
+      } else {
+        document.getElementById('awardMostCatchesName').innerText = 'None recorded';
+        document.getElementById('awardMostCatchesStat').innerText = '0 Catches';
+        document.getElementById('awardMostCatchesSub').innerText = 'Fielding';
+      }
+
+      // Most Boundaries (4s + 6s)
+      if (awards.mostBoundaries) {
+        document.getElementById('awardMostBoundariesName').innerText = `${getFormattedPlayerName(awards.mostBoundaries.name, awards.mostBoundaries.team)} (${awards.mostBoundaries.team})`;
+        document.getElementById('awardMostBoundariesStat').innerText = `${awards.mostBoundaries.boundaries} Boundaries`;
+        document.getElementById('awardMostBoundariesSub').innerText = `${awards.mostBoundaries.fours} × 4s  |  ${awards.mostBoundaries.sixes} × 6s`;
+      } else {
+        document.getElementById('awardMostBoundariesName').innerText = 'None recorded';
+        document.getElementById('awardMostBoundariesStat').innerText = '0 Boundaries';
+        document.getElementById('awardMostBoundariesSub').innerText = '0 × 4s  |  0 × 6s';
+      }
+    }
+
     // Save or Update Match Checkpoint in History
     function archiveCurrentMatch(isQuickCheckpoint = false) {
       const inn1 = state.innings[0];
@@ -2023,6 +2257,8 @@ Chahal</textarea>
       const statusLabel = state.matchResultText 
         ? state.matchResultText 
         : `In Progress (${state.currentInning === 1 ? '1st' : '2nd'} Inn - ${formatOvers(currentInning().legalBalls)} ov)`;
+
+      const awards = state.matchWinner ? computeMatchAwards() : null;
 
       const matchRecord = {
         id: state.matchId,
@@ -2035,6 +2271,7 @@ Chahal</textarea>
         result: statusLabel,
         isCompleted: Boolean(state.matchWinner),
         winner: state.matchWinner || "In Progress",
+        awards: awards,
         fullState: JSON.parse(JSON.stringify(state))
       };
 
@@ -2042,7 +2279,6 @@ Chahal</textarea>
       const existingIndex = existingHistory.findIndex(item => item.id === state.matchId);
 
       if (existingIndex !== -1) {
-        // Update existing checkpoint so history doesn't get cluttered with duplicates
         existingHistory[existingIndex] = matchRecord;
       } else {
         existingHistory.unshift(matchRecord);
@@ -2053,13 +2289,12 @@ Chahal</textarea>
       if (isQuickCheckpoint) {
         alert(`Checkpoint saved at ${matchRecord.time}! You can safely resume this match anytime from History.`);
       } else {
-        alert("Match saved to history archive!");
+        alert("Match & Awards archived to History!");
         renderHistory();
         switchTab('history');
       }
     }
 
-    // Render History with Option 1 (Resume Live Play) & Option 2 (Analyze Scorecard)
     function renderHistory() {
       const container = document.getElementById('historyListContainer');
       const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
@@ -2090,7 +2325,7 @@ Chahal</textarea>
               ▶️ Resume Match
             </button>
 
-            <!-- Option 2: Load Read-Only Scorecard for Later Analysis -->
+            <!-- Option 2: Load Read-Only Scorecard & Awards for Later Analysis -->
             <button type="button" onclick="analyzeArchivedMatch(${index})" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold flex items-center justify-center gap-1 transition">
               📋 Analyze Scorecard
             </button>
@@ -2099,7 +2334,6 @@ Chahal</textarea>
       `).join('');
     }
 
-    // Option 1: Retrieve match state and continue live scoring
     function resumeArchivedMatch(index) {
       if (currentRole !== 'scorer') {
         alert("Unlock Scorer Mode with your PIN first to resume and edit a live match.");
@@ -2123,7 +2357,6 @@ Chahal</textarea>
       }
     }
 
-    // Option 2: Load match on a later date in Viewer Mode for safe analysis
     function analyzeArchivedMatch(index) {
       const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
       const record = history[index];
@@ -2133,7 +2366,6 @@ Chahal</textarea>
       }
 
       state = JSON.parse(JSON.stringify(record.fullState));
-      // Switch to Viewer mode automatically so historical data cannot be accidentally altered during analysis
       currentRole = 'viewer';
       saveState();
       applyRoleUI();
@@ -2341,6 +2573,7 @@ Chahal</textarea>
       }
 
       renderScorecardTables();
+      renderMatchAwards();
     }
 
     function renderScorecardTables() {
@@ -2468,6 +2701,25 @@ Chahal</textarea>
       }
       text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
+      if (state.matchWinner) {
+        const awards = computeMatchAwards();
+        text += `🏅 *MATCH AWARDS & HIGHLIGHTS:*\n`;
+        if (awards.bestBatter) {
+          text += `• *Best Batsman:* ${awards.bestBatter.name} (${awards.bestBatter.team}) - ${awards.bestBatter.runs} runs (${awards.bestBatter.balls}b, SR ${awards.bestBatter.sr.toFixed(0)})\n`;
+        }
+        if (awards.bestBowler) {
+          const econText = awards.bestBowler.ballsBowled > 0 ? awards.bestBowler.econ.toFixed(2) : '0.00';
+          text += `• *Best Bowler:* ${awards.bestBowler.name} (${awards.bestBowler.team}) - ${awards.bestBowler.wickets} wkts, Econ ${econText}\n`;
+        }
+        if (awards.highestCatches) {
+          text += `• *Highest Catches:* ${awards.highestCatches.names} - ${awards.highestCatches.catches}\n`;
+        }
+        if (awards.mostBoundaries) {
+          text += `• *Most Boundaries (4s+6s):* ${awards.mostBoundaries.name} (${awards.mostBoundaries.team}) - ${awards.mostBoundaries.boundaries} (${awards.mostBoundaries.fours}x4s, ${awards.mostBoundaries.sixes}x6s)\n`;
+        }
+        text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      }
+
       function generateInningScorecardText(inn, innNumber) {
         let block = `📋 *${innNumber === 1 ? '1ST' : '2ND'} INNINGS: ${inn.battingTeam.toUpperCase()}*\n`;
         block += `Total: *${inn.totalRuns}/${inn.wickets}* in *${formatOvers(inn.legalBalls)}* Overs (CRR: ${calcRunRate(inn.totalRuns, inn.legalBalls)})\n`;
@@ -2539,7 +2791,7 @@ Chahal</textarea>
       text += `_Scored pitch-side on HS Cage Cricket Web Scorer_`;
 
       navigator.clipboard.writeText(text).then(() => {
-        alert("Complete official match scorecard copied to clipboard! Paste directly into WhatsApp.");
+        alert("Complete official match scorecard & awards copied to clipboard! Paste directly into WhatsApp.");
       }).catch(err => {
         console.error("Clipboard copy failed", err);
       });
